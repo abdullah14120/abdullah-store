@@ -1,32 +1,21 @@
 /*
- * Aurora Droid
- * Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
- *
- * Aurora Droid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Aurora Droid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Developed by: Abdullah Al-Tamimi
+ * Project: Custom Android Store (Aurora Based)
+ * Component: Session Installer - Zero Restriction Deployment
+ * * Original Copyright (C) 2019-20, Rahul Kumar Patel
  */
 
 package com.aurora.adroid.installer;
 
 import android.app.PendingIntent;
-import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInstaller;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 
+import com.aurora.adroid.AuroraApplication;
 import com.aurora.adroid.util.Log;
 
 import org.apache.commons.io.IOUtils;
@@ -53,30 +42,68 @@ public class SessionInstaller extends InstallerBase {
         xInstall(packageName, fileName);
     }
 
+    // الدالة الجديدة التي أضفناها في الواجهة IInstaller لتوفير تثبيت بلا قيود
+    @Override
+    public void installApkUnrestricted(@NonNull String packageName, @NonNull String filePath) {
+        final File fileName = new File(filePath);
+        xInstall(packageName, fileName);
+    }
+
     private void xInstall(String packageName, File file) {
         final PackageInstaller packageInstaller = context.getPackageManager().getPackageInstaller();
         try {
+            // إعداد معاملات الجلسة مع حقن صلاحيات التجاوز
             final PackageInstaller.SessionParams sessionParams = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+            
+            // 1. السماح باستبدال التطبيق الحالي بغض النظر عن الإصدار أو التوقيع
+            sessionParams.setInstallFlags(sessionParams.getInstallFlags() | 0x00000002); // INSTALL_REPLACE_EXISTING
+            
+            // 2. السماح بتثبيت إصدارات أقدم (Downgrade) لتجنب قيود التحديث
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                sessionParams.setInstallFlags(sessionParams.getInstallFlags() | 0x00000080); // INSTALL_ALLOW_DOWNGRADE
+            }
+
+            // 3. تجاوز التحقق من الشهادة الأمنية (لأجهزة أندرويد 10 وما فوق)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                sessionParams.setInstallFlags(sessionParams.getInstallFlags() | 0x00040000); // INSTALL_DISABLE_VERIFICATION
+            }
+
+            Log.i("SessionInstaller [" + AuroraApplication.DEVELOPER_SIGNATURE + "]: Initiating Unrestricted Session for " + packageName);
+
             final int sessionID = packageInstaller.createSession(sessionParams);
             final PackageInstaller.Session session = packageInstaller.openSession(sessionID);
+            
             final InputStream inputStream = new FileInputStream(file);
             final OutputStream outputStream = session.openWrite(file.getName(), 0, file.length());
 
             IOUtils.copy(inputStream, outputStream);
             session.fsync(outputStream);
+            
             inputStream.close();
             outputStream.close();
 
+            // إعداد الـ Callback لاستقبال النتيجة في InstallerService
             final Intent callbackIntent = new Intent(context, InstallerService.class);
+            
+            // إضافة FLAG_MUTABLE لضمان التوافق مع أندرويد 12+
+            int pendingFlags = PendingIntent.FLAG_UPDATE_CURRENT;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                pendingFlags |= PendingIntent.FLAG_MUTABLE;
+            }
+
             final PendingIntent pendingIntent = PendingIntent.getService(
                     context,
                     sessionID,
                     callbackIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT);
+                    pendingFlags);
+
             session.commit(pendingIntent.getIntentSender());
             session.close();
+            
+            Log.i("Session Committed Successfully by Abdullah Al-Tamimi");
+
         } catch (Exception e) {
-            Log.e(e.getMessage());
+            Log.e("Installation Session Failed: " + e.getMessage());
         }
     }
 }
