@@ -4,9 +4,10 @@
     <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">#0A0A0A</item>
         <item name="colorPrimaryDark">#000000</item>
-        <item name="colorAccent">#00E676</item> <item name="android:windowBackground">#0A0A0A</item>
-        <item name="android:colorBackground">#0A0A0A</item>
+        <item name="colorAccent">#00E676</item> 
         
+        <item name="android:windowBackground">#0A0A0A</item>
+        <item name="android:colorBackground">#0A0A0A</item>
         <item name="android:statusBarColor">#0A0A0A</item>
         <item name="android:navigationBarColor">#0A0A0A</item>
         
@@ -19,7 +20,8 @@
 
     <style name="ShapeAppearance.App.SmallComponent" parent="ShapeAppearance.MaterialComponents.SmallComponent">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">4dp</item> </style>
+        <item name="cornerSize">4dp</item> 
+    </style>
 
     <style name="ShapeAppearance.App.MediumComponent" parent="ShapeAppearance.MaterialComponents.MediumComponent">
         <item name="cornerFamily">rounded</item>
@@ -30,12 +32,6 @@
         <item name="textAllCaps">false</item>
         <item name="android:textStyle">bold</item>
         <item name="cornerRadius">4dp</item>
-    </style>
-
-    <style name="TextAppearance.Aurora.Line2" parent="TextAppearance.MaterialComponents.Body2">
-        <item name="android:textColor">#FFFFFF</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 
     <style name="FixLogoStyle">
