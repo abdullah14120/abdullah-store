@@ -1,46 +1,50 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-  ~ Aurora Droid
-  ~ Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
-  ~
-  ~ Aurora Droid is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as published by
-  ~ the Free Software Foundation, either version 3 of the License, or
-  ~ (at your option) any later version.
-  ~
-  ~ Aurora Droid is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License
-  ~ along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
-  ~
-  -->
-
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/margin_large">
+    android:orientation="vertical"
+    android:layout_marginTop="24dp">
 
-    <com.aurora.adroid.ui.view.HeaderLayout
-        android:id="@+id/header_updated_apps"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:iconAction="@drawable/ic_arrow"
-        app:iconHeader="@drawable/ic_update_filled"
-        app:txtHeader="@string/title_latest_updated" />
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:layout_marginBottom="12dp">
+
+        <com.aurora.adroid.ui.view.HeaderLayout
+            android:id="@+id/header_updated_apps"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:iconAction="@drawable/ic_arrow"
+            app:iconHeader="@drawable/ic_update_filled"
+            app:txtHeader="آخر التحديثات التقنية" />
+            
+        <View
+            android:layout_width="40dp"
+            android:layout_height="2dp"
+            android:layout_marginTop="4dp"
+            android:background="#00E676"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/header_updated_apps" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_latest"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/header_updated_apps"
         android:clipToPadding="false"
         android:orientation="horizontal"
-        android:paddingStart="@dimen/margin_small"
-        android:paddingEnd="@dimen/margin_small"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:overScrollMode="never"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/item_cluster" />
-</RelativeLayout>
+
+</LinearLayout>
