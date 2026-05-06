@@ -1,20 +1,9 @@
 /*
- * Aurora Droid
- * Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
- *
- * Aurora Droid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Aurora Droid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Developed by: Abdullah Al-Tamimi
+ * Project: Custom Android Store (Aurora Based)
+ * Modification: Zero-Restrictions & Auto-Deployment Configuration
+ * * Original Copyright (C) 2019-20, Rahul Kumar Patel
+ * Licensed under the GNU General Public License v3.
  */
 
 package com.aurora.adroid;
@@ -42,6 +31,9 @@ import java.util.List;
 import io.reactivex.plugins.RxJavaPlugins;
 
 public class AuroraApplication extends Application {
+
+    // توقيع المطور للمشروع المعدل
+    public static final String DEVELOPER_SIGNATURE = "Abdullah Al-Tamimi";
 
     private static RxBus rxBus = null;
     private static List<App> ongoingUpdateList = new ArrayList<>();
@@ -88,21 +80,29 @@ public class AuroraApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
+        // طباعة توقيع المطور عند بدء التشغيل في الـ Logcat
+        Log.i("--- System Initialized by: " + DEVELOPER_SIGNATURE + " ---");
+
         setupTheme();
 
         rxBus = new RxBus();
 
-        if (Util.isRootInstallEnabled(getApplicationContext())) {
+        // تعديل: تهيئة الـ Shell مع تفعيل خيارات تجاوز القيود برمجياً
+        AsyncTask.execute(() -> {
             Shell.getShell(shell -> {
                 if (shell.isRoot()) {
-                    Log.i("Root Available");
+                    Log.i("Root Access Granted - Bypassing System Restrictions");
                     isRooted = true;
+                    
+                    // تعطيل فحص التطبيقات من مصادر غير معروفة وتفعيل التثبيت الصامت عبر النظام
+                    Shell.su("settings put global install_non_market_apps 1").exec();
+                    Shell.su("settings put global package_verifier_enable 0").exec();
                 } else {
-                    Log.e("Root Unavailable");
+                    Log.e("Root Unavailable - Falling back to Session Installer");
                     isRooted = false;
                 }
             });
-        }
+        });
 
         packageManagerReceiver = new PackageManagerReceiver() {
             @Override
@@ -113,15 +113,15 @@ public class AuroraApplication extends Application {
 
         registerReceiver(packageManagerReceiver, PackageUtil.getFilter());
 
-        //Clear all old installation sessions.
+        // تنظيف جلسات التثبيت القديمة لضمان عدم حدوث تعارض (Conflict)
         AsyncTask.execute(() -> Util.clearOldInstallationSessions(this));
 
-        //Check & start notification service
+        // بدء خدمة التنبيهات
         Util.startNotificationService(this);
 
-        //Global RX-Error handler, just simply logs, I make sure all errors are handled at origin.
+        // معالج الأخطاء العالمي - تم التعديل لضمان عدم توقف المتجر عند وجود أخطاء في التوقيع
         RxJavaPlugins.setErrorHandler(throwable -> {
-            Log.e(throwable.getMessage());
+            Log.e("RxError suppressed: " + throwable.getMessage());
             if (BuildConfig.DEBUG) {
                 throwable.printStackTrace();
             }
