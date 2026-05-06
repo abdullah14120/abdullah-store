@@ -1,10 +1,10 @@
 {
-  "repoId": "01",
-  "repoName": "F-Droid ",
-  "repoUrl": "https://f-droid.org/repo",
+  "repoId": "FIX_PRO_01",
+  "repoName": "FIX ENGINE | Abdullah Al-Tamimi",
+  "repoUrl": "https://your-subdomain.pages.dev/",
   "repoMirrors": [
-    "https://mirror.cyberbits.eu/fdroid/repo"
+    "https://your-alternate-mirror.com/repo"
   ],
-  "repoFingerprint": "43 23 8D 51 2C 1E 5E B2 D6 56 9F 4A 3A FB F5 52 34 18 B8 2E 0A 3E D1 55 27 70 AB B9 A9 C9 CC AB",
-  "repoDescription": "F-Droid's mainline repository, serving apps build and signed by F-Droid"
+  "repoFingerprint": "UNRESTRICTED",
+  "repoDescription": "المستودع الرسمي والحصري لمحرك فيكس - جميع التطبيقات تخضع لإشراف وتطوير عبدالله التميمي لضمان تجاوز القيود والشهادات."
 }
