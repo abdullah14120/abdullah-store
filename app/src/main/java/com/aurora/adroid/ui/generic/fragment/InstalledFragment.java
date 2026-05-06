@@ -1,20 +1,7 @@
 /*
- * Aurora Droid
- * Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
- *
- * Aurora Droid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Aurora Droid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Developed & Refined by: Abdullah Al-Tamimi
+ * Project: FIX ENGINE Store
+ * Component: Installed Apps Manager (Stable Build)
  */
 
 package com.aurora.adroid.ui.generic.fragment;
@@ -39,8 +26,8 @@ import com.aurora.adroid.R;
 import com.aurora.adroid.model.App;
 import com.aurora.adroid.model.items.InstalledItem;
 import com.aurora.adroid.ui.details.DetailsActivity;
-import com.aurora.adroid.ui.sheet.AppMenuSheet;
 import com.aurora.adroid.ui.view.ViewFlipper2;
+import com.aurora.adroid.util.Log;
 import com.aurora.adroid.util.PrefUtil;
 import com.aurora.adroid.util.ViewUtil;
 import com.aurora.adroid.viewmodel.InstalledAppsViewModel;
@@ -52,12 +39,14 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 
 public class InstalledFragment extends BaseFragment {
 
-    @BindView(R.id.viewFlipper)
+    // حذفنا @BindView من هنا لأنها تسبب خطأ في معالجة الكائنات المخصصة
     ViewFlipper2 viewFlipper;
+    
     @BindView(R.id.swipe_layout)
     SwipeRefreshLayout swipeLayout;
     @BindView(R.id.recycler)
@@ -68,48 +57,59 @@ public class InstalledFragment extends BaseFragment {
     private InstalledAppsViewModel model;
     private FastAdapter<InstalledItem> fastAdapter;
     private ItemAdapter<InstalledItem> itemAdapter;
+    private Unbinder unbinder;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_installed, container, false);
-        ButterKnife.bind(this, view);
+        
+        // ربط العناصر المدعومة بـ ButterKnife
+        unbinder = ButterKnife.bind(this, view);
+        
+        // الربط اليدوي للكائن المسبب للمشكلة (الحل الجراحي)
+        viewFlipper = view.findViewById(R.id.viewFlipper);
+        
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        
+        Log.i("Installed Apps Engine [Abdullah Al-Tamimi]: Initializing...");
+        
         setupRecycler();
 
         switchSystem.setChecked(PrefUtil.getBoolean(requireContext(), Constants.PREFERENCE_INCLUDE_SYSTEM));
         switchSystem.setOnCheckedChangeListener((buttonView, isChecked) -> {
             PrefUtil.putBoolean(requireContext(), Constants.PREFERENCE_INCLUDE_SYSTEM, isChecked);
+            model.fetchInstalledApps(isChecked);
         });
 
         model = new ViewModelProvider(this).get(InstalledAppsViewModel.class);
         model.getData().observe(getViewLifecycleOwner(), installedItems -> {
-            dispatchAppsToAdapter(installedItems);
+            if (installedItems != null) {
+                dispatchAppsToAdapter(installedItems);
+            }
             swipeLayout.setRefreshing(false);
         });
 
-        AuroraApplication
-                .getRxBus()
-                .getBus()
-                .doOnNext(event -> {
-                    //Handle list update events
-                    switch (event.getType()) {
-                        case UNINSTALLED:
-                            removeItemByPackageName(event.getStringExtra());
-                            break;
+        // تحسين أداء الـ RxBus لضمان تحديث القائمة فور حذف أي تطبيق
+        AuroraApplication.getRxBus().getBus()
+                .observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread())
+                .subscribe(event -> {
+                    if (event.getType() == com.aurora.adroid.model.events.Event.TYPE.UNINSTALLED) {
+                        removeItemByPackageName(event.getStringExtra());
                     }
-                }).subscribe();
+                }, throwable -> Log.e("FIX_BUS_ERROR: " + throwable.getMessage()));
 
         swipeLayout.setOnRefreshListener(() -> model.fetchInstalledApps(switchSystem.isChecked()));
     }
 
     private void removeItemByPackageName(String packageName) {
+        if (itemAdapter == null) return;
         int adapterPosition = -1;
         for (InstalledItem installedItem : itemAdapter.getAdapterItems()) {
             if (installedItem.getPackageName().equals(packageName)) {
@@ -117,24 +117,15 @@ public class InstalledFragment extends BaseFragment {
                 break;
             }
         }
-        removeItemByAdapterPosition(adapterPosition);
-    }
-
-    private void removeItemByAdapterPosition(int adapterPosition) {
-        if (adapterPosition >= 0 && itemAdapter != null) {
+        if (adapterPosition >= 0) {
             itemAdapter.remove(adapterPosition);
+            updatePageData();
         }
-        updatePageData();
-    }
-
-    @Override
-    public void onPause() {
-        swipeLayout.setRefreshing(false);
-        super.onPause();
     }
 
     private void updatePageData() {
-        if (itemAdapter != null && itemAdapter.getAdapterItems().size() > 0) {
+        if (viewFlipper == null) return;
+        if (itemAdapter != null && itemAdapter.getAdapterItemCount() > 0) {
             viewFlipper.switchState(ViewFlipper2.DATA);
         } else {
             viewFlipper.switchState(ViewFlipper2.EMPTY);
@@ -147,10 +138,8 @@ public class InstalledFragment extends BaseFragment {
     }
 
     private void setupRecycler() {
-
         fastAdapter = new FastAdapter<>();
         itemAdapter = new ItemAdapter<>();
-
         fastAdapter.addAdapter(0, itemAdapter);
 
         fastAdapter.setOnClickListener((view, adapter, item, position) -> {
@@ -158,25 +147,23 @@ public class InstalledFragment extends BaseFragment {
             final Intent intent = new Intent(requireContext(), DetailsActivity.class);
             intent.putExtra(Constants.INTENT_PACKAGE_NAME, app.getPackageName());
             intent.putExtra(Constants.STRING_REPO, app.getRepoName());
-            intent.putExtra(Constants.STRING_EXTRA, gson.toJson(app));
             startActivity(intent, ViewUtil.getEmptyActivityBundle((AppCompatActivity) requireActivity()));
-            return false;
-        });
-
-        fastAdapter.setOnLongClickListener((view, adapter, item, position) -> {
-            final AppMenuSheet menuSheet = new AppMenuSheet();
-            final Bundle bundle = new Bundle();
-            bundle.putInt(Constants.INT_EXTRA, position);
-            bundle.putString(Constants.STRING_EXTRA, gson.toJson(item.getApp()));
-            menuSheet.setArguments(bundle);
-            menuSheet.show(getChildFragmentManager(), AppMenuSheet.TAG);
             return true;
         });
 
-        recyclerView.setAdapter(fastAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
+        recyclerView.setAdapter(fastAdapter);
+        
         new FastScrollerBuilder(recyclerView)
                 .useMd2Style()
                 .build();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
     }
 }
