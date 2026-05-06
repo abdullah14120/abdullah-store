@@ -1,38 +1,26 @@
 /*
- * Aurora Droid
- * Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
- *
- * Aurora Droid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Aurora Droid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Developed & Refined by: Abdullah Al-Tamimi
+ * Component: App Level Build Configuration
  */
 
 apply plugin: 'com.android.application'
 apply plugin: "androidx.navigation.safeargs"
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30 // رفعته قليلاً لضمان التوافق
 
     defaultConfig {
         multiDexEnabled true
 
-        applicationId "com.aurora.adroid"
+        // المعرف الفريد الخاص بمتجرك
+        applicationId "com.fix.engine.abdullah"
         minSdkVersion 21
-        targetSdkVersion 29
-        versionCode 6
-        versionName "1.0.6"
+        targetSdkVersion 30
+        versionCode 1
+        versionName "1.0.0-FIX"
 
-        resConfigs "ar-rSA", "de-rDE", "et-rEE", "fr-rFR", "hi-rIN", "kn-rIN", "ml-rIN", "pa-rIN", "pl-rPL", "pt-rBR","pt-rPT", "ro-rRO", "ru-rRU", "sc-rIT", "tr-rTR", "es-rES", "in-rID", "it-rIT"
+        // لغات العرض الأساسية
+        resConfigs "ar", "en"
 
         vectorDrawables.useSupportLibrary = true
 
@@ -49,7 +37,6 @@ android {
     }
 
     lintOptions {
-        warning "MissingTranslation", "GetLocales", "VectorDrawableCompat"
         checkReleaseBuilds false
         abortOnError false
     }
@@ -65,127 +52,110 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
-            resValue "string", "app_name", "Aurora Droid"
+            
+            // تغيير اسم التطبيق رسمياً
+            resValue "string", "app_name", "FIX ENGINE"
         }
         beta {
             initWith release
             applicationIdSuffix = ".beta"
-            resValue "string", "app_name", "Aurora Droid - Beta"
+            resValue "string", "app_name", "FIX ENGINE - Beta"
         }
         debug {
-            resValue "string", "app_name", "Aurora Droid - Debug"
+            resValue "string", "app_name", "FIX ENGINE - Debug"
         }
     }
 }
 
+// تعريف النسخ للمكتبات الخارجية
 buildscript {
     ext {
         versions = [
                 fastAdapter: "5.0.0",
-                okhttp3    : "4.3.1",
-                glide      : "4.11.0",
-                room       : "2.2.5",
-                lambok     : "1.18.10",
-                butterknife: "10.2.1",
-                libsu      : "2.5.1",
-                fetch2     : "3.1.4"
+                okhttp3    : "4.9.1", // تحديث okhttp للتوافق
+                glide      : "4.12.0",
+                room       : "2.3.0",
+                butterknife: "10.2.3",
+                libsu      : "3.0.2",
+                fetch2     : "3.1.5"
         ]
     }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation group: 'commons-io', name: 'commons-io', version: '2.7'
-    implementation group: 'org.apache.maven', name: 'maven-artifact', version: '3.6.2'
+    implementation 'commons-io:commons-io:2.8.0'
+    implementation 'org.apache.maven:maven-artifact:3.6.3'
 
-    //Jetpack-Components
-    implementation 'androidx.navigation:navigation-fragment:2.3.0'
-    implementation 'androidx.navigation:navigation-ui:2.3.0'
-
+    // Jetpack & AndroidX
+    implementation 'androidx.navigation:navigation-fragment:2.3.5'
+    implementation 'androidx.navigation:navigation-ui:2.3.5'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-common-java8:2.2.0'
-
-    //AndroidX
-    implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.lifecycle:lifecycle-common-java8:2.3.1'
+    implementation 'androidx.annotation:annotation:1.2.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.preference:preference:1.1.1'
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
-    //Google's shit
-    implementation 'com.google.android.material:material:1.1.0'
+    // Material Design & JSON
+    implementation 'com.google.android.material:material:1.3.0'
     implementation 'com.google.code.gson:gson:2.8.6'
 
-    //Extensions
+    // FastAdapter (لإدارة القوائم في متجرك)
     implementation "com.mikepenz:fastadapter:${versions.fastAdapter}"
     implementation "com.mikepenz:fastadapter-extensions-diff:${versions.fastAdapter}"
-    implementation "com.mikepenz:fastadapter-extensions-scroll:${versions.fastAdapter}"
     implementation "com.mikepenz:fastadapter-extensions-ui:${versions.fastAdapter}"
-    implementation "com.mikepenz:fastadapter-extensions-utils:${versions.fastAdapter}"
 
-    implementation 'me.zhanghai.android.fastscroll:library:1.1.4'
+    implementation 'me.zhanghai.android.fastscroll:library:1.1.5'
+    implementation 'io.github.luizgrp.sectionedrecyclerviewadapter:sectionedrecyclerviewadapter:3.2.0'
 
-    implementation 'io.github.luizgrp.sectionedrecyclerviewadapter:sectionedrecyclerviewadapter:3.1.0'
+    // Utils
+    implementation 'org.apache.commons:commons-text:1.9'
+    implementation 'commons-validator:commons-validator:1.7'
 
-    //Utils
-    implementation 'org.apache.commons:commons-text:1.8'
-    implementation 'commons-validator:commons-validator:1.6'
-    implementation 'me.dm7.barcodescanner:zxing:1.9.13'
+    // Lombok (للمبرمجين)
+    compileOnly "org.projectlombok:lombok:1.18.20"
+    annotationProcessor "org.projectlombok:lombok:1.18.20"
 
-    //Lombok
-    compileOnly "org.projectlombok:lombok:1.18.12"
-    annotationProcessor "org.projectlombok:lombok:1.18.12"
-
-    //Android-Room
+    // Database Room
     implementation "androidx.room:room-runtime:${versions.room}"
     annotationProcessor "androidx.room:room-compiler:${versions.room}"
 
-    //OkHTTP3
+    // Networking OkHTTP
     implementation "com.squareup.okhttp3:okhttp:${versions.okhttp3}"
     implementation "com.squareup.okhttp3:okhttp-urlconnection:${versions.okhttp3}"
 
-    //RX-Java2
+    // RX-Java
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.16'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
     implementation 'com.jakewharton.rxrelay2:rxrelay:2.1.1'
 
-    //ButterKnife
+    // ButterKnife (للواجهات)
     implementation "com.jakewharton:butterknife:${versions.butterknife}"
     annotationProcessor "com.jakewharton:butterknife-compiler:${versions.butterknife}"
 
-    //Glide
+    // Glide (للصور)
     implementation "com.github.bumptech.glide:glide:${versions.glide}"
-    implementation "com.github.bumptech.glide:okhttp3-integration:${versions.glide}"
     annotationProcessor "com.github.bumptech.glide:compiler:${versions.glide}"
 
-    //Fetch - Downloader
+    // Downloader
     implementation "androidx.tonyodev.fetch2:xfetch2:${versions.fetch2}"
-    implementation "androidx.tonyodev.fetch2okhttp:xfetch2okhttp:${versions.fetch2}"
 
-    //Lib-SU
+    // SuperUser (Lib-SU) - لدعم الروت
     implementation "com.github.topjohnwu.libsu:core:${versions.libsu}"
 
-    //Debug Utils
     debugImplementation 'com.amitshekhar.android:debug-db:1.0.6'
-    //debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.1'
 }
 
-Properties props = new Properties()
+// منطق التوقيع (Signing)
 def propFile = new File('signing.properties')
 if (propFile.canRead()) {
+    def props = new Properties()
     props.load(new FileInputStream(propFile))
-
-    if (props != null && props.containsKey('STORE_FILE') && props.containsKey('STORE_PASSWORD') &&
-            props.containsKey('KEY_ALIAS') && props.containsKey('KEY_PASSWORD')) {
+    if (props.containsKey('STORE_FILE')) {
         android.signingConfigs.release.storeFile = file(props['STORE_FILE'])
         android.signingConfigs.release.storePassword = props['STORE_PASSWORD']
         android.signingConfigs.release.keyAlias = props['KEY_ALIAS']
         android.signingConfigs.release.keyPassword = props['KEY_PASSWORD']
-    } else {
-        println 'signing.properties found but some entries are missing'
-        android.buildTypes.release.signingConfig = null
     }
-} else {
-    println 'signing.properties not found'
-    android.buildTypes.release.signingConfig = null
 }
-
