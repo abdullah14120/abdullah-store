@@ -1,13 +1,13 @@
 /*
  * Developed & Refined by: Abdullah Al-Tamimi
  * Project: FIX ENGINE Store
- * Component: Main Dashboard Controller (Unrestricted)
- * * Original Copyright (C) 2019-20, Rahul Kumar Patel
+ * Component: Main Dashboard Controller (Unrestricted & Optimized)
  */
 
 package com.aurora.adroid.ui.main;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -44,6 +44,7 @@ import com.mikepenz.fastadapter.adapters.FastItemAdapter;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.Unbinder;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -59,70 +60,84 @@ public class HomeFragment extends Fragment {
     private FastItemAdapter<NewClusterItem> fastItemAdapterNew;
     private FastItemAdapter<GenericClusterItem> fastItemAdapterUpdates;
     private FastItemAdapter<RepoItem> fastItemAdapterIndices;
-    private CompositeDisposable disposable = new CompositeDisposable();
+    
+    private final CompositeDisposable disposable = new CompositeDisposable();
+    private Unbinder unbinder;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        // استخدام خلفية FIX ENGINE السوداء التي حددناها سابقاً
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-        ButterKnife.bind(this, view);
+        unbinder = ButterKnife.bind(this, view);
         return view;
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        // بصمة المطور عند تشغيل الشاشة الرئيسية
-        Log.i("FIX Dashboard initialized by: Abdullah Al-Tamimi");
+        Log.i("FIX Dashboard Engine initialized by: Abdullah Al-Tamimi");
+
+        // ضبط الألوان برمجياً لضمان التوافق مع الهوية البصرية
+        swipeLayout.setColorSchemeColors(Color.parseColor("#00E676"));
+        swipeLayout.setProgressBackgroundColorSchemeColor(Color.parseColor("#161616"));
 
         setupNewApps();
         setupUpdatedApps();
         setupRepository();
 
-        // ربط البيانات مع ViewModel مع مراعاة الأداء العالي
+        initViewModels();
+        initRxBus();
+
+        swipeLayout.setOnRefreshListener(this::startRepoSyncService);
+    }
+
+    private void initViewModels() {
         ClusterAppsViewModel clusterModel = new ViewModelProvider(requireActivity()).get(ClusterAppsViewModel.class);
         
         clusterModel.getNewAppsLiveData().observe(getViewLifecycleOwner(), apps -> {
+            if (apps == null) return;
             disposable.add(Observable.fromIterable(apps)
                     .subscribeOn(Schedulers.io())
                     .map(NewClusterItem::new)
                     .toList()
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(clusterItems -> fastItemAdapterNew.set(clusterItems), 
-                              throwable -> Log.e("FIX_ERROR: " + throwable.getMessage())));
+                              throwable -> Log.e("FIX_UI_ERROR: " + throwable.getMessage())));
         });
 
         clusterModel.getUpdatedAppsLiveData().observe(getViewLifecycleOwner(), apps -> {
+            if (apps == null) return;
             disposable.add(Observable.fromIterable(apps)
                     .subscribeOn(Schedulers.io())
                     .map(GenericClusterItem::new)
                     .toList()
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(clusterItems -> fastItemAdapterUpdates.set(clusterItems), 
-                              throwable -> Log.e("FIX_ERROR: " + throwable.getMessage())));
+                              throwable -> Log.e("FIX_UI_ERROR: " + throwable.getMessage())));
         });
 
         IndexModel indexModel = new ViewModelProvider(requireActivity()).get(IndexModel.class);
         indexModel.getAllIndicesLive().observe(getViewLifecycleOwner(), indices -> {
+            if (indices == null) return;
             final RepoSyncManager repoSyncManager = new RepoSyncManager(requireContext());
             disposable.add(Observable.fromIterable(indices)
                     .filter(index -> repoSyncManager.isSynced(index.getRepoId()))
                     .map(RepoItem::new)
                     .toList()
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(indexItems -> {
-                        fastItemAdapterIndices.clear();
-                        fastItemAdapterIndices.add(indexItems);
+                        fastItemAdapterIndices.set(indexItems);
                     }, throwable -> Log.e("FIX_REPO_ERROR: " + throwable.getMessage())));
         });
+    }
 
-        // تخصيص رسائل المزامنة لتناسب الطابع الدبلوماسي الحاد
-        AuroraApplication.getRxBus().getBus()
+    private void initRxBus() {
+        disposable.add(AuroraApplication.getRxBus().getBus()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext(event -> {
+                .subscribe(event -> {
                     switch (event.getType()) {
                         case SYNC_EMPTY:
                             swipeLayout.setRefreshing(false);
@@ -136,14 +151,14 @@ public class HomeFragment extends Fragment {
                             swipeLayout.setRefreshing(false);
                             break;
                     }
-                })
-                .subscribe();
-
-        swipeLayout.setOnRefreshListener(this::startRepoSyncService);
+                }, throwable -> Log.e("FIX_BUS_ERROR: " + throwable.getMessage())));
     }
 
     private void startRepoSyncService() {
-        if (SyncService.isServiceRunning()) return;
+        if (SyncService.isServiceRunning()) {
+            swipeLayout.setRefreshing(false);
+            return;
+        }
 
         Log.i("Manual Sync Triggered: Abdullah Al-Tamimi Repository");
         final Intent intent = new Intent(requireActivity(), SyncService.class);
@@ -158,14 +173,14 @@ public class HomeFragment extends Fragment {
     public void showAllNewApps() {
         Intent intent = new Intent(requireContext(), GenericAppActivity.class);
         intent.putExtra("LIST_TYPE", 0);
-        requireActivity().startActivity(intent);
+        startActivity(intent);
     }
 
     @OnClick(R.id.header_updated_apps)
     public void showAllUpdatedApps() {
         Intent intent = new Intent(requireContext(), GenericAppActivity.class);
         intent.putExtra("LIST_TYPE", 1);
-        requireActivity().startActivity(intent);
+        startActivity(intent);
     }
 
     private void setupRepository() {
@@ -176,7 +191,7 @@ public class HomeFragment extends Fragment {
             intent.putExtra("REPO_ID", item.getIndex().getRepoId());
             intent.putExtra("REPO_NAME", item.getIndex().getName());
             startActivity(intent);
-            return false;
+            return true;
         });
         recyclerViewIndices.setAdapter(fastItemAdapterIndices);
         recyclerViewIndices.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
@@ -189,11 +204,10 @@ public class HomeFragment extends Fragment {
             intent.putExtra(Constants.INTENT_PACKAGE_NAME, item.getPackageName());
             intent.putExtra(Constants.STRING_REPO, item.getApp().getRepoName());
             startActivity(intent, ViewUtil.getEmptyActivityBundle((AppCompatActivity) requireActivity()));
-            return false;
+            return true;
         });
 
         recyclerViewNew.setAdapter(fastItemAdapterNew);
-        // استخدام تصميم 2-Grid الأفقي الذي يظهر احترافية توزيع التطبيقات
         recyclerViewNew.setLayoutManager(new GridLayoutManager(requireContext(), 2, RecyclerView.HORIZONTAL, false));
     }
 
@@ -204,7 +218,7 @@ public class HomeFragment extends Fragment {
             intent.putExtra(Constants.INTENT_PACKAGE_NAME, item.getPackageName());
             intent.putExtra(Constants.STRING_REPO, item.getApp().getRepoName());
             startActivity(intent, ViewUtil.getEmptyActivityBundle((AppCompatActivity) requireActivity()));
-            return false;
+            return true;
         });
 
         recyclerViewUpdates.setAdapter(fastItemAdapterUpdates);
@@ -212,15 +226,17 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
-    public void onPause() {
+    public void onDestroyView() {
+        super.onDestroyView();
         swipeLayout.setRefreshing(false);
-        super.onPause();
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
     }
 
     @Override
     public void onDestroy() {
         disposable.clear();
-        disposable.dispose();
         super.onDestroy();
     }
 }
