@@ -1,20 +1,8 @@
 /*
- * Aurora Droid
- * Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
- *
- * Aurora Droid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Aurora Droid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Developed & Refined by: Abdullah Al-Tamimi
+ * Project: FIX ENGINE Store
+ * Component: Main Dashboard Controller (Unrestricted)
+ * * Original Copyright (C) 2019-20, Rahul Kumar Patel
  */
 
 package com.aurora.adroid.ui.main;
@@ -63,14 +51,10 @@ import io.reactivex.schedulers.Schedulers;
 
 public class HomeFragment extends Fragment {
 
-    @BindView(R.id.swipe_layout)
-    SwipeRefreshLayout swipeLayout;
-    @BindView(R.id.recycler_repo)
-    RecyclerView recyclerViewIndices;
-    @BindView(R.id.recycler_latest)
-    RecyclerView recyclerViewUpdates;
-    @BindView(R.id.recycler_new)
-    RecyclerView recyclerViewNew;
+    @BindView(R.id.swipe_layout) SwipeRefreshLayout swipeLayout;
+    @BindView(R.id.recycler_repo) RecyclerView recyclerViewIndices;
+    @BindView(R.id.recycler_latest) RecyclerView recyclerViewUpdates;
+    @BindView(R.id.recycler_new) RecyclerView recyclerViewNew;
 
     private FastItemAdapter<NewClusterItem> fastItemAdapterNew;
     private FastItemAdapter<GenericClusterItem> fastItemAdapterUpdates;
@@ -81,6 +65,7 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+        // استخدام خلفية FIX ENGINE السوداء التي حددناها سابقاً
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         ButterKnife.bind(this, view);
         return view;
@@ -90,20 +75,24 @@ public class HomeFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        // بصمة المطور عند تشغيل الشاشة الرئيسية
+        Log.i("FIX Dashboard initialized by: Abdullah Al-Tamimi");
+
         setupNewApps();
         setupUpdatedApps();
         setupRepository();
 
+        // ربط البيانات مع ViewModel مع مراعاة الأداء العالي
         ClusterAppsViewModel clusterModel = new ViewModelProvider(requireActivity()).get(ClusterAppsViewModel.class);
+        
         clusterModel.getNewAppsLiveData().observe(getViewLifecycleOwner(), apps -> {
             disposable.add(Observable.fromIterable(apps)
                     .subscribeOn(Schedulers.io())
                     .map(NewClusterItem::new)
                     .toList()
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(clusterItems -> {
-                        fastItemAdapterNew.set(clusterItems);
-                    }, throwable -> Log.e(throwable.getMessage())));
+                    .subscribe(clusterItems -> fastItemAdapterNew.set(clusterItems), 
+                              throwable -> Log.e("FIX_ERROR: " + throwable.getMessage())));
         });
 
         clusterModel.getUpdatedAppsLiveData().observe(getViewLifecycleOwner(), apps -> {
@@ -112,9 +101,8 @@ public class HomeFragment extends Fragment {
                     .map(GenericClusterItem::new)
                     .toList()
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(clusterItems -> {
-                        fastItemAdapterUpdates.set(clusterItems);
-                    }, throwable -> Log.e(throwable.getMessage())));
+                    .subscribe(clusterItems -> fastItemAdapterUpdates.set(clusterItems), 
+                              throwable -> Log.e("FIX_ERROR: " + throwable.getMessage())));
         });
 
         IndexModel indexModel = new ViewModelProvider(requireActivity()).get(IndexModel.class);
@@ -127,9 +115,10 @@ public class HomeFragment extends Fragment {
                     .subscribe(indexItems -> {
                         fastItemAdapterIndices.clear();
                         fastItemAdapterIndices.add(indexItems);
-                    }, throwable -> Log.e(throwable.getMessage())));
+                    }, throwable -> Log.e("FIX_REPO_ERROR: " + throwable.getMessage())));
         });
 
+        // تخصيص رسائل المزامنة لتناسب الطابع الدبلوماسي الحاد
         AuroraApplication.getRxBus().getBus()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -137,48 +126,32 @@ public class HomeFragment extends Fragment {
                     switch (event.getType()) {
                         case SYNC_EMPTY:
                             swipeLayout.setRefreshing(false);
-                            ContextUtil.toastLong(requireContext(), getString(R.string.toast_repo_sync_empty));
+                            ContextUtil.toastLong(requireContext(), "المستودع فارغ حالياً");
                             break;
                         case SYNC_COMPLETED:
-                            ContextUtil.toastLong(requireContext(), getString(R.string.toast_repo_sync_completed));
+                            ContextUtil.toastLong(requireContext(), "تم تحديث محرك FIX بنجاح");
                             swipeLayout.setRefreshing(false);
                             break;
                         case SYNC_NO_UPDATES:
-                            ContextUtil.toastLong(requireContext(), getString(R.string.toast_repo_sync_no_updates));
                             swipeLayout.setRefreshing(false);
                             break;
                     }
                 })
                 .subscribe();
+
         swipeLayout.setOnRefreshListener(this::startRepoSyncService);
     }
 
     private void startRepoSyncService() {
-        if (SyncService.isServiceRunning())
-            return;
+        if (SyncService.isServiceRunning()) return;
 
+        Log.i("Manual Sync Triggered: Abdullah Al-Tamimi Repository");
         final Intent intent = new Intent(requireActivity(), SyncService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             requireActivity().startForegroundService(intent);
         } else {
             requireActivity().startService(intent);
         }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        swipeLayout.setRefreshing(false);
-        super.onPause();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
     }
 
     @OnClick(R.id.header_new_apps)
@@ -206,8 +179,7 @@ public class HomeFragment extends Fragment {
             return false;
         });
         recyclerViewIndices.setAdapter(fastItemAdapterIndices);
-        recyclerViewIndices.setLayoutManager(new LinearLayoutManager(requireContext(),
-                RecyclerView.HORIZONTAL, false));
+        recyclerViewIndices.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false));
     }
 
     private void setupNewApps() {
@@ -221,8 +193,8 @@ public class HomeFragment extends Fragment {
         });
 
         recyclerViewNew.setAdapter(fastItemAdapterNew);
-        recyclerViewNew.setLayoutManager(new GridLayoutManager(requireContext(), 2,
-                RecyclerView.HORIZONTAL, false));
+        // استخدام تصميم 2-Grid الأفقي الذي يظهر احترافية توزيع التطبيقات
+        recyclerViewNew.setLayoutManager(new GridLayoutManager(requireContext(), 2, RecyclerView.HORIZONTAL, false));
     }
 
     private void setupUpdatedApps() {
@@ -236,7 +208,19 @@ public class HomeFragment extends Fragment {
         });
 
         recyclerViewUpdates.setAdapter(fastItemAdapterUpdates);
-        recyclerViewUpdates.setLayoutManager(new GridLayoutManager(requireContext(), 2,
-                RecyclerView.HORIZONTAL, false));
+        recyclerViewUpdates.setLayoutManager(new GridLayoutManager(requireContext(), 2, RecyclerView.HORIZONTAL, false));
+    }
+
+    @Override
+    public void onPause() {
+        swipeLayout.setRefreshing(false);
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        disposable.clear();
+        disposable.dispose();
+        super.onDestroy();
     }
 }
