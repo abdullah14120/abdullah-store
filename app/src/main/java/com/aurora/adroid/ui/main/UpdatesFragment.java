@@ -1,25 +1,14 @@
 /*
- * Aurora Droid
- * Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
- *
- * Aurora Droid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Aurora Droid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Developed & Optimized by: Abdullah Al-Tamimi
+ * Project: FIX ENGINE Store
+ * Component: Advanced Update Manager
+ * * Original Copyright (C) 2019-20, Rahul Kumar Patel
  */
 
 package com.aurora.adroid.ui.main;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,6 +34,7 @@ import com.aurora.adroid.ui.details.DetailsActivity;
 import com.aurora.adroid.ui.generic.fragment.BaseFragment;
 import com.aurora.adroid.ui.sheet.AppMenuSheet;
 import com.aurora.adroid.ui.view.ViewFlipper2;
+import com.aurora.adroid.util.Log;
 import com.aurora.adroid.util.Util;
 import com.aurora.adroid.util.ViewUtil;
 import com.aurora.adroid.viewmodel.UpdatesViewModel;
@@ -69,22 +59,21 @@ import java.util.Set;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class UpdatesFragment extends BaseFragment {
 
-    @BindView(R.id.viewFlipper)
-    ViewFlipper2 viewFlipper;
-    @BindView(R.id.swipe_layout)
-    SwipeRefreshLayout swipeLayout;
-    @BindView(R.id.recycler)
-    RecyclerView recyclerView;
-    @BindView(R.id.txt_update_all)
-    AppCompatTextView txtUpdateAll;
-    @BindView(R.id.btn_action)
-    MaterialButton btnAction;
+    @BindView(R.id.viewFlipper) ViewFlipper2 viewFlipper;
+    @BindView(R.id.swipe_layout) SwipeRefreshLayout swipeLayout;
+    @BindView(R.id.recycler) RecyclerView recyclerView;
+    @BindView(R.id.txt_update_all) AppCompatTextView txtUpdateAll;
+    @BindView(R.id.btn_action) MaterialButton btnAction;
 
     private Fetch fetch;
-    private Set<UpdatesItem> selectedItems = new HashSet<>();
+    private final Set<UpdatesItem> selectedItems = new HashSet<>();
+    private final CompositeDisposable disposable = new CompositeDisposable();
 
     private UpdatesViewModel model;
     private FastAdapter<UpdatesItem> fastAdapter;
@@ -103,6 +92,10 @@ public class UpdatesFragment extends BaseFragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        
+        // بصمة المطور عند تشغيل مدير التحديثات
+        Log.i("FIX Update Engine [Abdullah Al-Tamimi]: Initialized");
+
         fetch = DownloadManager.getFetchInstance(requireContext());
         setupRecycler();
 
@@ -112,42 +105,26 @@ public class UpdatesFragment extends BaseFragment {
             swipeLayout.setRefreshing(false);
         });
 
-        AuroraApplication
-                .getRxBus()
-                .getBus()
-                .doOnNext(event -> {
-                    //Handle list update events
+        disposable.add(AuroraApplication.getRxBus().getBus()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(event -> {
                     switch (event.getType()) {
                         case BLACKLIST:
                         case INSTALLED:
                         case UNINSTALLED:
                             removeItemByPackageName(event.getStringExtra());
                             break;
-                    }
-
-                    //Handle misc events
-                    switch (event.getType()) {
                         case BULK_UPDATE_NOTIFY:
                             updatePageData();
                             break;
-                        case WHITELIST:
-                            //TODO:Check for update and add app to list if update is available
-                            break;
                     }
-                }).subscribe();
+                }, throwable -> Log.e("FIX_BUS_ERROR: " + throwable.getMessage())));
 
         swipeLayout.setOnRefreshListener(() -> model.fetchUpdatableApps());
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        swipeLayout.setRefreshing(false);
-        super.onPause();
+        
+        // تلوين الـ SwipeRefresh بالهوية الجديدة
+        swipeLayout.setColorSchemeColors(Util.getColorAttribute(requireContext(), R.attr.colorAccent));
     }
 
     private void removeItemByPackageName(String packageName) {
@@ -158,18 +135,9 @@ public class UpdatesFragment extends BaseFragment {
                 break;
             }
         }
-
-        if (adapterPosition >= 0 && itemAdapter != null) {
+        if (adapterPosition >= 0) {
             itemAdapter.remove(adapterPosition);
             updateItemList(packageName);
-        }
-    }
-
-    private void removeItemByAdapterPosition(int adapterPosition) {
-        if (adapterPosition >= 0 && itemAdapter != null) {
-            UpdatesItem updatesItem = itemAdapter.getAdapterItem(adapterPosition);
-            updateItemList(updatesItem.getPackageName());
-            itemAdapter.remove(adapterPosition);
         }
     }
 
@@ -183,7 +151,7 @@ public class UpdatesFragment extends BaseFragment {
         updateButtons();
         updateButtonActions();
 
-        if (itemAdapter != null && itemAdapter.getAdapterItems().size() > 0) {
+        if (itemAdapter != null && itemAdapter.getAdapterItemCount() > 0) {
             viewFlipper.switchState(ViewFlipper2.DATA);
         } else {
             viewFlipper.switchState(ViewFlipper2.EMPTY);
@@ -207,19 +175,8 @@ public class UpdatesFragment extends BaseFragment {
             final Intent intent = new Intent(requireContext(), DetailsActivity.class);
             intent.putExtra(Constants.INTENT_PACKAGE_NAME, app.getPackageName());
             intent.putExtra(Constants.STRING_REPO, app.getRepoName());
-            intent.putExtra(Constants.STRING_EXTRA, gson.toJson(app));
             startActivity(intent, ViewUtil.getEmptyActivityBundle((AppCompatActivity) requireActivity()));
             return false;
-        });
-
-        fastAdapter.setOnLongClickListener((view, adapter, item, position) -> {
-            final AppMenuSheet menuSheet = new AppMenuSheet();
-            final Bundle bundle = new Bundle();
-            bundle.putInt(Constants.INT_EXTRA, position);
-            bundle.putString(Constants.STRING_EXTRA, gson.toJson(item.getApp()));
-            menuSheet.setArguments(bundle);
-            menuSheet.show(getChildFragmentManager(), AppMenuSheet.TAG);
-            return true;
         });
 
         fastAdapter.addExtension(selectExtension);
@@ -227,24 +184,22 @@ public class UpdatesFragment extends BaseFragment {
 
         selectExtension.setMultiSelect(true);
         selectExtension.setSelectionListener((item, selected) -> {
-            if (selected) {
-                selectedItems.add(item);
-            } else {
-                selectedItems.remove(item);
-            }
+            if (selected) selectedItems.add(item);
+            else selectedItems.remove(item);
             updatePageData();
         });
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(fastAdapter);
     }
 
     private void updateText() {
+        // نصوص حادة ومباشرة (دبلوماسية)
         if (selectExtension.getSelectedItems().size() > 0) {
-            btnAction.setText(getString(R.string.list_update_selected));
+            btnAction.setText("تحديث العناصر المختارة");
         } else {
-            btnAction.setText(getString(R.string.list_update_all));
+            btnAction.setText("تحديث الكل فوراً");
         }
     }
 
@@ -254,66 +209,16 @@ public class UpdatesFragment extends BaseFragment {
         txtUpdateAll.setVisibility(size == 0 ? View.INVISIBLE : View.VISIBLE);
 
         if (size > 0) {
-            txtUpdateAll.setText(new StringBuilder()
-                    .append(size)
-                    .append(StringUtils.SPACE)
-                    .append(size == 1
-                            ? requireContext().getString(R.string.list_update_all_txt_one)
-                            : requireContext().getString(R.string.list_update_all_txt)));
+            txtUpdateAll.setText(String.format("يوجد %d تحديثاً تقنياً متاحاً", size));
         }
-    }
-
-    private void attachFetchCancelListener() {
-        boolean selectiveUpdate = selectExtension.getSelectedItems().size() > 0;
-        Observable.fromIterable(selectiveUpdate
-                ? selectedItems
-                : itemAdapter.getAdapterItems())
-                .map(updatesItem -> updatesItem.getPackageName().hashCode())
-                .doOnNext(hashcode -> {
-                    final FetchListener fetchListener = new AbstractFetchGroupListener() {
-                        @Override
-                        public void onAdded(int groupId, @NotNull Download download, @NotNull FetchGroup fetchGroup) {
-                            super.onAdded(groupId, download, fetchGroup);
-                            if (hashcode == groupId) {
-                                fetch.cancelGroup(groupId);
-                                fetch.removeListener(this);
-                            }
-                        }
-
-                        @Override
-                        public void onProgress(int groupId, @NotNull Download download, long etaInMilliSeconds, long downloadedBytesPerSecond, @NotNull FetchGroup fetchGroup) {
-                            super.onProgress(groupId, download, etaInMilliSeconds, downloadedBytesPerSecond, fetchGroup);
-                            if (hashcode == groupId) {
-                                fetch.cancelGroup(groupId);
-                                fetch.removeListener(this);
-                            }
-                        }
-
-                        @Override
-                        public void onQueued(int groupId, @NotNull Download download, boolean waitingNetwork, @NotNull FetchGroup fetchGroup) {
-                            super.onQueued(groupId, download, waitingNetwork, fetchGroup);
-                            if (hashcode == groupId) {
-                                fetch.cancelGroup(groupId);
-                                fetch.removeListener(this);
-                            }
-                        }
-                    };
-                    fetch.addListener(fetchListener);
-                })
-                .doOnComplete(() -> {
-                    //Clear ongoing update list
-                    AuroraApplication.setOngoingUpdateList(new ArrayList<>());
-                    //Start BulkUpdate cancellation request
-                    Util.stopBulkUpdateService(requireContext());
-                })
-                .subscribe();
     }
 
     private void updateButtonActions() {
         btnAction.setOnClickListener(null);
         btnAction.setEnabled(true);
+        
         if (AuroraApplication.isBulkUpdateAlive()) {
-            btnAction.setText(getString(R.string.action_cancel));
+            btnAction.setText("إلغاء العملية");
             btnAction.setOnClickListener(v -> {
                 attachFetchCancelListener();
                 btnAction.setEnabled(false);
@@ -322,18 +227,37 @@ public class UpdatesFragment extends BaseFragment {
             boolean selectiveUpdate = selectExtension.getSelectedItems().size() > 0;
             btnAction.setOnClickListener(v -> {
                 btnAction.setEnabled(false);
-                Observable.fromIterable(selectiveUpdate
-                        ? selectedItems
-                        : itemAdapter.getAdapterItems())
+                disposable.add(Observable.fromIterable(selectiveUpdate ? selectedItems : itemAdapter.getAdapterItems())
                         .map(UpdatesItem::getApp)
                         .toList()
-                        .doOnSuccess(apps -> {
-                            AuroraApplication.setOngoingUpdateList(apps);
+                        .subscribe(apps -> {
+                            AuroraApplication.setOngoingUpdateList(new ArrayList<>(apps));
                             Util.startBulkUpdateService(requireContext());
-
-                        })
-                        .subscribe();
+                        }, throwable -> Log.e("FIX_UPDATE_ERROR: " + throwable.getMessage())));
             });
         }
+    }
+
+    private void attachFetchCancelListener() {
+        boolean selectiveUpdate = selectExtension.getSelectedItems().size() > 0;
+        disposable.add(Observable.fromIterable(selectiveUpdate ? selectedItems : itemAdapter.getAdapterItems())
+                .map(updatesItem -> updatesItem.getPackageName().hashCode())
+                .subscribe(hashcode -> {
+                    fetch.addListener(new AbstractFetchGroupListener() {
+                        @Override
+                        public void onAdded(int groupId, @NotNull Download download, @NotNull FetchGroup fetchGroup) {
+                            if (hashcode == groupId) { fetch.cancelGroup(groupId); fetch.removeListener(this); }
+                        }
+                    });
+                }, throwable -> Log.e(throwable.getMessage()), () -> {
+                    AuroraApplication.setOngoingUpdateList(new ArrayList<>());
+                    Util.stopBulkUpdateService(requireContext());
+                }));
+    }
+
+    @Override
+    public void onDestroy() {
+        disposable.clear();
+        super.onDestroy();
     }
 }
