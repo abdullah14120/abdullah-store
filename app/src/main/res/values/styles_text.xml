@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="AuroraTextStyle" parent="Widget.AppCompat.TextView">
         <item name="autoSizeTextType">uniform</item>
         <item name="android:autoSizeTextType">uniform</item>
@@ -18,11 +19,16 @@
         <item name="android:textAppearance">@style/TextAppearance.Aurora.Title.Primary</item>
     </style>
 
+    <style name="AuroraTextStyle.Title.Secondary" parent="AuroraTextStyle.Title">
+        <item name="android:textAppearance">@style/TextAppearance.Aurora.Title.Secondary</item>
+    </style>
+
     <style name="TextAppearance.Aurora.Title" parent="TextAppearance.AppCompat.Medium">
         <item name="android:letterSpacing">0.1</item>
         <item name="android:textSize">20sp</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:textColor">#00E676</item> </style>
+        <item name="android:textColor">#00E676</item>
+    </style>
 
     <style name="TextAppearance.Aurora.Title.Primary" parent="TextAppearance.Aurora.Title">
         <item name="android:textSize">22sp</item>
@@ -30,14 +36,26 @@
         <item name="android:letterSpacing">0.15</item>
     </style>
 
+    <style name="TextAppearance.Aurora.Title.Secondary" parent="TextAppearance.Aurora.Title.Primary">
+        <item name="android:alpha">0.7</item>
+    </style>
+
     <style name="AuroraTextStyle.Subtitle" parent="AuroraTextStyle">
         <item name="android:textAppearance">@style/TextAppearance.Aurora.SubTitle</item>
+    </style>
+
+    <style name="AuroraTextStyle.Subtitle.Secondary" parent="AuroraTextStyle.Subtitle">
+        <item name="android:textAppearance">@style/TextAppearance.Aurora.Line2</item>
     </style>
 
     <style name="TextAppearance.Aurora.SubTitle" parent="TextAppearance.Aurora.Title">
         <item name="android:letterSpacing">0.05</item>
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">#B0FFFFFF</item>
+    </style>
+
+    <style name="TextAppearance.Aurora.SubTitle.Alt" parent="TextAppearance.Aurora.SubTitle">
+        <item name="android:textStyle">normal</item>
     </style>
 
     <style name="AuroraTextStyle.Line1" parent="AuroraTextStyle">
@@ -76,14 +94,16 @@
         <item name="android:textStyle">bold</item>
     </style>
 
+    <style name="TextAppearance.Aurora.Chip" parent="TextAppearance.Aurora.Line1">
+        <item name="android:letterSpacing">0.05</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#00E676</item>
+    </style>
+
     <style name="TextAppearance.Aurora.DialogTitle" parent="@style/TextAppearance.Aurora.Title">
         <item name="android:textSize">22sp</item>
         <item name="android:gravity">center</item>
     </style>
-    <style name="TextAppearance.Aurora.Chip" parent="TextAppearance.Aurora.Line1">
-        <item name="android:letterSpacing">0.05</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:textColor">#00E676</item> </style>
 
     <style name="TextAppearance.Aurora.DialogSubTitle" parent="TextAppearance.Aurora.SubTitle">
         <item name="android:textSize">14sp</item>
