@@ -1,18 +1,12 @@
-/*
- * Developed & Modernized by: Abdullah Al-Tamimi
- * Project: FIX ENGINE (Modernized Build System)
- */
-
 buildscript {
     repositories {
         google()
-        mavenCentral() // البديل الرسمي لـ JCenter
-        maven { url "https://plugins.gradle.org/m2/" }
+        mavenCentral() // الأولوية لهذا المستودع الآن
     }
     dependencies {
-        // تحديث بسيط لضمان التوافق مع Gradle الحديث
-        classpath 'com.android.tools.build:gradle:4.2.2'
-        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:2.3.5"
+        // نسخة Plugin متوافقة مع Gradle 8.x
+        classpath 'com.android.tools.build:gradle:7.4.2' 
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:2.5.3"
     }
 }
 
@@ -21,7 +15,6 @@ allprojects {
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
-        maven { url "https://maven.google.com" }
     }
 }
 
