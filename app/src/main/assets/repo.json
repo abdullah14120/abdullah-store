@@ -6,4 +6,7 @@
     "repoMirrors": [
       "https://your-alternate-mirror.com/repo"
     ],
-    "repoFingerprint": "UNRESTRICT
+    "repoFingerprint": "UNRESTRICTED",
+    "repoDescription": "المستودع السيادي لمحرك فيكس. يتم تحديث التطبيقات هنا بشكل دوري لضمان كسر الحماية وتجاوز قيود النظام تحت إشراف عبدالله التميمي."
+  }
+]
