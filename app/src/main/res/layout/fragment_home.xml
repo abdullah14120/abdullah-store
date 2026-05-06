@@ -2,15 +2,18 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0A0A"> <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    android:background="#0A0A0A">
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:progressBackgroundColorSchemeColor="#161616"
-        app:colorSchemeColors="#00E676"> <androidx.core.widget.NestedScrollView
+        android:layout_height="match_parent">
+
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
@@ -33,7 +36,8 @@
                     android:textColor="#00E676"
                     android:textSize="10sp"
                     android:textStyle="bold"
-                    android:letterSpacing="0.2" />
+                    android:letterSpacing="0.2"
+                    tools:ignore="SmallSp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -90,7 +94,8 @@
                     android:text="FIX ENGINE v1.0 | By Abdullah Al-Tamimi"
                     android:textColor="#33FFFFFF"
                     android:textSize="10sp"
-                    android:letterSpacing="0.1" />
+                    android:letterSpacing="0.1"
+                    tools:ignore="SmallSp" />
 
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
