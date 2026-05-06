@@ -1,61 +1,47 @@
-<!--
-  ~ Aurora Droid
-  ~ Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
-  ~
-  ~ Aurora Droid is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as published by
-  ~ the Free Software Foundation, either version 3 of the License, or
-  ~ (at your option) any later version.
-  ~
-  ~ Aurora Droid is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License
-  ~ along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
-  ~
-  -->
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.preference.PreferenceScreen 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-<androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
-    <SwitchPreferenceCompat
-        app:defaultValue="true"
+    <androidx.preference.SwitchPreferenceCompat
+        android:key="PREFERENCE_INSTALLATION_AUTO"
+        android:title="@string/pref_install_auto_title"
+        android:summary="@string/pref_install_auto_summary"
+        android:defaultValue="true"
         app:singleLineTitle="false"
-        app:iconSpaceReserved="false"
-        app:key="PREFERENCE_INSTALLATION_AUTO"
-        app:summary="@string/pref_install_auto_summary"
-        app:title="@string/pref_install_auto_title" />
+        app:iconSpaceReserved="false" />
 
-    <SwitchPreferenceCompat
-        app:defaultValue="true"
+    <androidx.preference.SwitchPreferenceCompat
+        android:key="PREFERENCE_INSTALLATION_DELETE"
+        android:title="@string/pref_install_delete_title"
+        android:summary="@string/pref_install_delete_summary"
+        android:defaultValue="true"
         app:singleLineTitle="false"
-        app:iconSpaceReserved="false"
-        app:key="PREFERENCE_INSTALLATION_DELETE"
-        app:summary="@string/pref_install_delete_summary"
-        app:title="@string/pref_install_delete_title" />
+        app:iconSpaceReserved="false" />
 
-    <ListPreference
-        app:defaultValue="3"
-        app:singleLineTitle="false"
-        app:iconSpaceReserved="false"
-        app:entries="@array/pref_installation_method"
-        app:entryValues="@array/pref_installation_method_values"
-        app:key="PREFERENCE_INSTALLATION_METHOD"
+    <androidx.preference.ListPreference
+        android:key="PREFERENCE_INSTALLATION_METHOD"
+        android:title="@string/pref_install_mode_title"
+        android:summary="@string/pref_install_mode_summary"
+        android:entries="@array/pref_installation_method"
+        android:entryValues="@array/pref_installation_method_values"
+        android:defaultValue="3"
         app:useSimpleSummaryProvider="true"
-        app:summary="@string/pref_install_mode_summary"
-        app:title="@string/pref_install_mode_title" />
-
-    <ListPreference
-        app:defaultValue="0"
-        app:iconSpaceReserved="false"
-        app:key="PREFERENCE_INSTALLATION_PROFILE"
-        app:summary="@string/pref_install_profile_summary"
-        app:title="@string/pref_install_profile_title" />
-
-    <Preference
-        app:key="PREFERENCE_LAUNCH_SERVICES"
         app:singleLineTitle="false"
-        app:iconSpaceReserved="false"
-        app:summary="@string/pref_services_desc"
-        app:title="@string/pref_services_title" />
+        app:iconSpaceReserved="false" />
+
+    <androidx.preference.ListPreference
+        android:key="PREFERENCE_INSTALLATION_PROFILE"
+        android:title="@string/pref_install_profile_title"
+        android:summary="@string/pref_install_profile_summary"
+        android:defaultValue="0"
+        app:iconSpaceReserved="false" />
+
+    <androidx.preference.Preference
+        android:key="PREFERENCE_LAUNCH_SERVICES"
+        android:title="@string/pref_services_title"
+        android:summary="@string/pref_services_desc"
+        app:singleLineTitle="false"
+        app:iconSpaceReserved="false" />
+
 </androidx.preference.PreferenceScreen>
