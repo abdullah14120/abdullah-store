@@ -1,23 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.preference.PreferenceScreen 
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <androidx.preference.SwitchPreferenceCompat
         android:key="PREFERENCE_INSTALLATION_AUTO"
         android:title="@string/pref_install_auto_title"
         android:summary="@string/pref_install_auto_summary"
-        android:defaultValue="true"
-        app:singleLineTitle="false"
-        app:iconSpaceReserved="false" />
+        android:defaultValue="true" />
 
     <androidx.preference.SwitchPreferenceCompat
         android:key="PREFERENCE_INSTALLATION_DELETE"
         android:title="@string/pref_install_delete_title"
         android:summary="@string/pref_install_delete_summary"
-        android:defaultValue="true"
-        app:singleLineTitle="false"
-        app:iconSpaceReserved="false" />
+        android:defaultValue="true" />
 
     <androidx.preference.ListPreference
         android:key="PREFERENCE_INSTALLATION_METHOD"
@@ -25,23 +20,17 @@
         android:summary="@string/pref_install_mode_summary"
         android:entries="@array/pref_installation_method"
         android:entryValues="@array/pref_installation_method_values"
-        android:defaultValue="3"
-        app:useSimpleSummaryProvider="true"
-        app:singleLineTitle="false"
-        app:iconSpaceReserved="false" />
+        android:defaultValue="3" />
 
     <androidx.preference.ListPreference
         android:key="PREFERENCE_INSTALLATION_PROFILE"
         android:title="@string/pref_install_profile_title"
         android:summary="@string/pref_install_profile_summary"
-        android:defaultValue="0"
-        app:iconSpaceReserved="false" />
+        android:defaultValue="0" />
 
     <androidx.preference.Preference
         android:key="PREFERENCE_LAUNCH_SERVICES"
         android:title="@string/pref_services_title"
-        android:summary="@string/pref_services_desc"
-        app:singleLineTitle="false"
-        app:iconSpaceReserved="false" />
+        android:summary="@string/pref_services_desc" />
 
 </androidx.preference.PreferenceScreen>
