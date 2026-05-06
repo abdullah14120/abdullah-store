@@ -1,50 +1,96 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-  ~ Aurora Droid
-  ~ Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
-  ~
-  ~ Aurora Droid is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as published by
-  ~ the Free Software Foundation, either version 3 of the License, or
-  ~ (at your option) any later version.
-  ~
-  ~ Aurora Droid is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License
-  ~ along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
-  ~
-  -->
-
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    android:layout_height="match_parent"
+    android:background="#0A0A0A"> <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <androidx.core.widget.NestedScrollView
+        android:layout_height="match_parent"
+        app:progressBackgroundColorSchemeColor="#161616"
+        app:colorSchemeColors="#00E676"> <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
             android:overScrollMode="never"
-            android:paddingBottom="@dimen/margin_bottom"
+            android:paddingBottom="100dp" 
             android:scrollbars="none">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingTop="12dp">
 
-                <include layout="@layout/include_new_apps" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginBottom="4dp"
+                    android:text="DISCOVER"
+                    android:textColor="#00E676"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.2" />
 
-                <include layout="@layout/include_latest_updated" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginBottom="24dp"
+                    android:text="Unrestricted Apps"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
 
-                <include layout="@layout/include_repositories" />
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp">
+                    <include layout="@layout/include_new_apps" />
+                </FrameLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="24dp"
+                    android:background="#1AFFFFFF" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp">
+                    <include layout="@layout/include_latest_updated" />
+                </FrameLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="24dp"
+                    android:background="#1AFFFFFF" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <include layout="@layout/include_repositories" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="40dp"
+                    android:layout_marginBottom="20dp"
+                    android:gravity="center"
+                    android:text="FIX ENGINE v1.0 | By Abdullah Al-Tamimi"
+                    android:textColor="#33FFFFFF"
+                    android:textSize="10sp"
+                    android:letterSpacing="0.1" />
 
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
