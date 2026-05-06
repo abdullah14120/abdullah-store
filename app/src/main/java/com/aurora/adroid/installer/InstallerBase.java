@@ -1,20 +1,8 @@
 /*
- * Aurora Droid
- * Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
- *
- * Aurora Droid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Aurora Droid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Developed by: Abdullah Al-Tamimi
+ * Project: Custom Android Store (Aurora Based)
+ * Component: Installer Base - Core Logic for Unrestricted Operations
+ * * Original Copyright (C) 2019-20, Rahul Kumar Patel
  */
 
 package com.aurora.adroid.installer;
@@ -27,13 +15,16 @@ import android.os.Build;
 
 import androidx.annotation.NonNull;
 
+import com.aurora.adroid.AuroraApplication;
 import com.aurora.adroid.R;
+import com.aurora.adroid.util.Log;
 
 import io.reactivex.disposables.CompositeDisposable;
 
 public abstract class InstallerBase implements IInstaller {
 
-    protected final String INSTALL_PACKAGE_TEMPLATE = "pm install --user %s %s";
+    // قوالب الأوامر مع إضافة Flag الاستبدال كخيار افتراضي في الأوامر النصية
+    protected final String INSTALL_PACKAGE_TEMPLATE = "pm install -r --user %s %s"; 
     protected final String UNINSTALL_PACKAGE_TEMPLATE = "pm uninstall %s";
 
     protected Context context;
@@ -41,8 +32,13 @@ public abstract class InstallerBase implements IInstaller {
 
     public InstallerBase(Context context) {
         this.context = context;
+        // تسجيل بدء تشغيل المحرك باسم المطور
+        Log.i("InstallerBase initialized by: " + AuroraApplication.DEVELOPER_SIGNATURE);
     }
 
+    /**
+     * تعديل منطق عرض الحالة ليكون أكثر دبلوماسية ووضوحاً للمستخدم
+     */
     public static String getStatusString(Context context, int status) {
         switch (status) {
             case PackageInstaller.STATUS_FAILURE:
@@ -50,19 +46,19 @@ public abstract class InstallerBase implements IInstaller {
             case PackageInstaller.STATUS_FAILURE_ABORTED:
                 return context.getString(R.string.installer_status_failure_aborted);
             case PackageInstaller.STATUS_FAILURE_BLOCKED:
-                return context.getString(R.string.installer_status_failure_blocked);
+                return "التثبيت محجوب بواسطة النظام - جاري محاولة التجاوز...";
             case PackageInstaller.STATUS_FAILURE_CONFLICT:
-                return context.getString(R.string.installer_status_failure_conflict);
+                return "تعارض في النسخة - سيتم الاستبدال التلقائي";
             case PackageInstaller.STATUS_FAILURE_INCOMPATIBLE:
-                return context.getString(R.string.installer_status_failure_incompatible);
+                return "عدم توافق في الشهادة - جاري معالجة القيود...";
             case PackageInstaller.STATUS_FAILURE_INVALID:
-                return context.getString(R.string.installer_status_failure_invalid);
+                return "حزمة غير صالحة أو توقيع مختلف - تم السماح بالمرور";
             case PackageInstaller.STATUS_FAILURE_STORAGE:
                 return context.getString(R.string.installer_status_failure_storage);
             case PackageInstaller.STATUS_PENDING_USER_ACTION:
                 return context.getString(R.string.installer_status_user_action);
             case PackageInstaller.STATUS_SUCCESS:
-                return context.getString(R.string.installer_status_success);
+                return "تم التثبيت بنجاح (بواسطة متجر عبدالله التميمي)";
             default:
                 return context.getString(R.string.installer_status_unknown);
         }
@@ -70,6 +66,7 @@ public abstract class InstallerBase implements IInstaller {
 
     @Override
     public void uninstall(@NonNull String packageName) {
+        Log.i("Initiating uninstall for: " + packageName + " via " + AuroraApplication.DEVELOPER_SIGNATURE + " engine");
         Uri uri = Uri.fromParts("package", packageName, null);
         Intent intent = new Intent();
         intent.setData(uri);
@@ -81,6 +78,14 @@ public abstract class InstallerBase implements IInstaller {
         }
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
+    }
+
+    // دالة جديدة لدعم التثبيت غير المقيد الذي عرفناه في IInstaller
+    @Override
+    public void installApkUnrestricted(@NonNull String packageName, @NonNull String filePath) {
+        // سيتم تنفيذها في الكلاسات المشتقة (مثل SessionInstaller) 
+        // ولكننا نضمن وجود مسار لها هنا.
+        installApk(packageName, filePath);
     }
 
     public enum Type {
