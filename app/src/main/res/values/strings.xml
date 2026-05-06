@@ -314,4 +314,7 @@
     <string name="toast_repo_sync_completed">All repositories updated</string>
     <string name="toast_repo_sync_empty">Select at least one staticRepo to sync</string>
     <string name="toast_repo_sync_no_updates">No updates available</string>
+  <string name="loading_tasks">جاري جلب قائمة التحميلات...</string>
+<string name="no_active_tasks">لا يوجد تحميلات نشطة حالياً</string>
+
 </resources>
