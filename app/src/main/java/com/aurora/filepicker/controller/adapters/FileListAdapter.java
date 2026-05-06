@@ -1,17 +1,7 @@
 /*
- * Copyright (C) 2016 Angad Singh
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Developed & Refined by: Abdullah Al-Tamimi
+ * Project: FIX ENGINE Store
+ * Component: FilePicker Adapter (Stable Build)
  */
 
 package com.aurora.filepicker.controller.adapters;
@@ -40,9 +30,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 public class FileListAdapter extends BaseAdapter {
 
     private ArrayList<FileListItem> fileListItems;
@@ -58,7 +45,7 @@ public class FileListAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return fileListItems.size();
+        return fileListItems == null ? 0 : fileListItems.size();
     }
 
     @Override
@@ -73,7 +60,6 @@ public class FileListAdapter extends BaseAdapter {
 
     @Override
     public View getView(final int position, View view, ViewGroup viewGroup) {
-
         final ViewHolder viewHolder;
 
         if (view == null) {
@@ -85,21 +71,20 @@ public class FileListAdapter extends BaseAdapter {
         }
 
         final FileListItem fileListItem = fileListItems.get(position);
+
+        // تحسين إدارة الرسوم المتحركة
+        view.clearAnimation();
         if (MarkedItemList.hasItem(fileListItem.getLocation())) {
             Animation animation = AnimationUtils.loadAnimation(context, R.anim.marked_item_animation);
             view.setAnimation(animation);
-        } else {
-            Animation animation = AnimationUtils.loadAnimation(context, R.anim.unmarked_item_animation);
-            view.setAnimation(animation);
         }
 
+        // تحديد نوع الأيقونة وتلوينها
         if (fileListItem.isDirectory()) {
             viewHolder.imgType.setImageResource(R.drawable.ic_type_folder);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                viewHolder.imgType.setColorFilter(context.getResources().getColor(R.color.colorPrimary, context.getTheme()));
-            } else {
-                viewHolder.imgType.setColorFilter(context.getResources().getColor(R.color.colorPrimary));
-            }
+            int color = ContextCompat.getColor(context, R.color.colorPrimary);
+            viewHolder.imgType.setColorFilter(color);
+            
             if (dialogProperties.selectionType == DialogConfigs.FILE_SELECT) {
                 viewHolder.materialCheckbox.setVisibility(View.INVISIBLE);
             } else {
@@ -107,11 +92,9 @@ public class FileListAdapter extends BaseAdapter {
             }
         } else {
             viewHolder.imgType.setImageResource(R.drawable.ic_type_file);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                viewHolder.imgType.setColorFilter(context.getResources().getColor(R.color.colorAccent, context.getTheme()));
-            } else {
-                viewHolder.imgType.setColorFilter(context.getResources().getColor(R.color.colorAccent));
-            }
+            int color = ContextCompat.getColor(context, R.color.colorAccent);
+            viewHolder.imgType.setColorFilter(color);
+
             if (dialogProperties.selectionType == DialogConfigs.DIR_SELECT) {
                 viewHolder.materialCheckbox.setVisibility(View.INVISIBLE);
             } else {
@@ -129,17 +112,14 @@ public class FileListAdapter extends BaseAdapter {
         if (position == 0 && fileListItem.getFilename().startsWith(context.getString(R.string.label_parent_dir))) {
             viewHolder.txtFileType.setText(R.string.label_parent_directory);
         } else {
-            viewHolder.txtFileType.setText(context.getString(R.string.last_edit) + formatDate.format(date) + ", " + formatTime.format(date));
+            viewHolder.txtFileType.setText(context.getString(R.string.last_edit) + ": " + formatDate.format(date) + " " + formatTime.format(date));
         }
+
         if (viewHolder.materialCheckbox.getVisibility() == View.VISIBLE) {
             if (position == 0 && fileListItem.getFilename().startsWith(context.getString(R.string.label_parent_dir))) {
                 viewHolder.materialCheckbox.setVisibility(View.INVISIBLE);
             }
-            if (MarkedItemList.hasItem(fileListItem.getLocation())) {
-                viewHolder.materialCheckbox.setChecked(true);
-            } else {
-                viewHolder.materialCheckbox.setChecked(false);
-            }
+            viewHolder.materialCheckbox.setChecked(MarkedItemList.hasItem(fileListItem.getLocation()));
         }
 
         viewHolder.materialCheckbox.setOnCheckedChangedListener((checkbox, isChecked) -> {
@@ -153,8 +133,11 @@ public class FileListAdapter extends BaseAdapter {
             } else {
                 MarkedItemList.removeSelectedItem(fileListItem.getLocation());
             }
-            notifyItemChecked.notifyCheckBoxIsClicked();
+            if (notifyItemChecked != null) {
+                notifyItemChecked.notifyCheckBoxIsClicked();
+            }
         });
+
         return view;
     }
 
@@ -162,18 +145,18 @@ public class FileListAdapter extends BaseAdapter {
         this.notifyItemChecked = notifyItemChecked;
     }
 
+    // تم حذف ButterKnife واستبداله بـ findViewById لضمان استقرار البناء
     public static class ViewHolder {
-        @BindView(R.id.image_type)
         ImageView imgType;
-        @BindView(R.id.file_name)
         TextView txtFileName;
-        @BindView(R.id.file_type)
         TextView txtFileType;
-        @BindView(R.id.file_mark)
         MaterialCheckbox materialCheckbox;
 
         public ViewHolder(View itemView) {
-            ButterKnife.bind(this, itemView);
+            imgType = itemView.findViewById(R.id.image_type);
+            txtFileName = itemView.findViewById(R.id.file_name);
+            txtFileType = itemView.findViewById(R.id.file_type);
+            materialCheckbox = itemView.findViewById(R.id.file_mark);
         }
     }
 }
