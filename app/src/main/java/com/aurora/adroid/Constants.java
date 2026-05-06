@@ -1,31 +1,25 @@
 /*
- * Aurora Droid
- * Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
- *
- * Aurora Droid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Aurora Droid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Developed & Refined by: Abdullah Al-Tamimi
+ * Project: FIX ENGINE Store
+ * Component: System Constants & Cloud Integration
+ * * Original Copyright (C) 2019-20, Rahul Kumar Patel
  */
 
 package com.aurora.adroid;
 
 public class Constants {
-    public static final String TAG = "Aurora Droid";
+    // توقيع المحرك المخصص
+    public static final String TAG = "FIX ENGINE | Abdullah Al-Tamimi";
+
+    // إعدادات المستودع الخاص بـ Cloudflare
+    public static final String CLOUDFLARE_REPO_URL = "https://your-subdomain.pages.dev/"; // ضع رابطك هنا
+    public static final String IMG_URL_PREFIX = "icons/"; // المسار داخل Cloudflare
+    public static final String DATA_FILE_NAME = "apps.json"; // ملفك الذي برمجناه سابقاً
+    
+    // تعطيل فحص التوقيع الرقمي للمستودع (index-v1.jar) لضمان السرعة والسهولة
+    public static final String SIGNED_FILE_NAME = "apps.json"; 
 
     public static final String SERVICE_PACKAGE = "com.aurora.services";
-    public static final String IMG_URL_PREFIX = "/icons-320/";
-    public static final String SIGNED_FILE_NAME = "index-v1.jar";
-    public static final String DATA_FILE_NAME = "index-v1.json";
     public static final String REPO_AVAILABLE = "REPO_AVAILABLE";
     public static final String DATABASE_AVAILABLE = "DATABASE_AVAILABLE";
     public static final String DATABASE_DATE = "DATABASE_DATE";
@@ -36,12 +30,13 @@ public class Constants {
     public static final String FILE_FAVOURITES = "/favourite.json";
     public static final String FILE_BLACKLIST = "/blacklist.json";
 
-    public static final String NOTIFICATION_CHANNEL_ALERT = "NOTIFICATION_CHANNEL_ALERT";
-    public static final String NOTIFICATION_CHANNEL_GENERAL = "NOTIFICATION_CHANNEL_GENERAL";
+    public static final String NOTIFICATION_CHANNEL_ALERT = "FIX_NOTIFICATION_CHANNEL_ALERT";
+    public static final String NOTIFICATION_CHANNEL_GENERAL = "FIX_NOTIFICATION_CHANNEL_GENERAL";
 
     public static final String PRIVILEGED_EXTENSION_PACKAGE_NAME = "com.aurora.services";
     public static final String PRIVILEGED_EXTENSION_SERVICE_INTENT = "com.aurora.services.IPrivilegedService";
 
+    // ثوابت الإعدادات (Preferences)
     public static final String PREFERENCE_REPO_HEADER_MAP = "PREFERENCE_REPO_HEADER_MAP";
     public static final String PREFERENCE_FIRST_LAUNCH_2 = "PREFERENCE_FIRST_LAUNCH_2";
     public static final String PREFERENCE_BLACKLIST_PACKAGE_LIST = "PREFERENCE_BLACKLIST_PACKAGE_LIST";
@@ -79,6 +74,7 @@ public class Constants {
     public static final String PREFERENCE_LOCALE_LIST = "PREFERENCE_LOCALE_LIST";
     public static final String PREFERENCE_LOCALE_COUNTRY = "PREFERENCE_LOCALE_COUNTRY";
 
+    // أسماء الشاشات (Fragments)
     public static final String FRAGMENT_NAME = "FRAGMENT_NAME";
     public static final String FRAGMENT_ABOUT = "FRAGMENT_ABOUT";
     public static final String FRAGMENT_INSTALLED = "FRAGMENT_INSTALLED";
@@ -92,6 +88,7 @@ public class Constants {
     public static final String STRING_EXTRA = "STRING_EXTRA";
     public static final String STRING_REPO = "STRING_REPO";
 
+    // ثوابت التحميل وتحديد الهوية
     public static final String DOWNLOAD_PACKAGE_NAME = "DOWNLOAD_PACKAGE_NAME";
     public static final String DOWNLOAD_DISPLAY_NAME = "DOWNLOAD_DISPLAY_NAME";
     public static final String DOWNLOAD_VERSION_NAME = "DOWNLOAD_VERSION_NAME";
@@ -99,8 +96,8 @@ public class Constants {
     public static final String DOWNLOAD_ICON_URL = "DOWNLOAD_ICON_URL";
     public static final String DOWNLOAD_APK_NAME = "DOWNLOAD_APK_NAME";
 
-    public static final String DOWNLOAD_REPO_ID = "DOWNLOAD_REPO_ID";
-    public static final String DOWNLOAD_REPO_NAME = "DOWNLOAD_REPO_NAME";
-    public static final String DOWNLOAD_REPO_URL = "DOWNLOAD_REPO_URL";
-    public static final String DOWNLOAD_REPO_FINGERPRINT = "DOWNLOAD_REPO_FINGERPRINT";
+    public static final String DOWNLOAD_REPO_ID = "FIX_REPO_01";
+    public static final String DOWNLOAD_REPO_NAME = "Abdullah Al-Tamimi Store";
+    public static final String DOWNLOAD_REPO_URL = CLOUDFLARE_REPO_URL;
+    public static final String DOWNLOAD_REPO_FINGERPRINT = "UNRESTRICTED";
 }
