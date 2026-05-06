@@ -2,22 +2,26 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0A0A"> <include layout="@layout/actionbar_main" />
+    android:background="#0A0A0A">
+
+    <include layout="@layout/actionbar_main" />
 
     <FrameLayout
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#0A0A0A"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:context=".ui.generic.activity.ContainerActivity" />
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="4dp"
-        android:background="@drawable/bg_gradient_soft_shadow"
-        app:layout_anchor="@id/app_bar"
-        app:layout_anchorGravity="bottom" />
+        android:layout_height="1dp"
+        android:background="#1AFFFFFF"
+        app:layout_anchor="@id/content"
+        app:layout_anchorGravity="top" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
