@@ -1,75 +1,77 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-  ~ Aurora Droid
-  ~ Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
-  ~
-  ~ Aurora Droid is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as published by
-  ~ the Free Software Foundation, either version 3 of the License, or
-  ~ (at your option) any later version.
-  ~
-  ~ Aurora Droid is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License
-  ~ along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
-  ~
-  -->
-<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/drawer_layout"
+    android:id="@+id/main_content"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    android:layout_height="match_parent"
+    android:background="#0A0A0A"> <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:background="#0A0A0A"
+        app:elevation="0dp">
 
-        <RelativeLayout
+        <include 
+            layout="@layout/actionbar_main"
+            app:layout_scrollFlags="scroll|enterAlways|snap" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <fragment
+            android:id="@+id/nav_host_main"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:defaultNavHost="true"
+            app:layout_constraintBottom_toTopOf="@id/bottom_nav_container"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:navGraph="@navigation/nav_graph_main" />
+
+        <FrameLayout
+            android:id="@+id/bottom_nav_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <include layout="@layout/actionbar_main" />
-
-            <fragment
-                android:id="@+id/nav_host_main"
-                android:name="androidx.navigation.fragment.NavHostFragment"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_below="@id/app_bar"
-                app:navGraph="@navigation/nav_graph_main" />
+            android:layout_height="wrap_content"
+            android:background="#0A0A0A"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="12dp"
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/bottom_navigation"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_bottom_nav_sharp"
+                app:itemIconSize="22dp"
+                app:itemIconTint="@color/nav_item_color_state"
+                app:itemTextColor="@color/nav_item_color_state"
                 app:labelVisibilityMode="labeled"
+                app:elevation="8dp"
                 app:menu="@menu/navigation" />
-        </RelativeLayout>
+        </FrameLayout>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/floaty"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_marginStart="@dimen/margin_normal"
-            android:layout_marginTop="@dimen/margin_bottom"
-            android:layout_marginEnd="@dimen/margin_normal"
-            android:layout_marginBottom="@dimen/margin_bottom"
-            app:backgroundTint="?colorAccent"
-            app:srcCompat="@drawable/ic_round_search"
-            app:tint="@color/colorWhite" />
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/navigation"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floaty"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        app:headerLayout="@layout/item_nav_header"
-        app:itemIconTint="?android:attr/colorAccent"
-        app:itemTextAppearance="@style/TextAppearance.Aurora.Line2"
-        app:menu="@menu/menu_drawer" />
-</androidx.drawerlayout.widget.DrawerLayout>
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="90dp" 
+        app:backgroundTint="#00E676"
+        app:elevation="6dp"
+        app:fabSize="normal"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.App.FAB.Sharp"
+        app:srcCompat="@drawable/ic_round_search"
+        app:tint="#000000" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
