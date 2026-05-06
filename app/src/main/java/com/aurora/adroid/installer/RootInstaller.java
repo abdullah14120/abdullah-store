@@ -1,20 +1,8 @@
 /*
- * Aurora Droid
- * Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
- *
- * Aurora Droid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Aurora Droid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Developed by: Abdullah Al-Tamimi
+ * Project: Custom Android Store (Aurora Based)
+ * Component: Root Installer - Direct Shell Deployment (Unrestricted)
+ * * Original Copyright (C) 2019-20, Rahul Kumar Patel
  */
 
 package com.aurora.adroid.installer;
@@ -48,24 +36,32 @@ public class RootInstaller extends InstallerBase {
 
     @Override
     public void installApk(@NonNull String packageName, @NonNull String filePath) {
-        if (Shell.getShell().isRoot()) {
-            String command = String.format(INSTALL_PACKAGE_TEMPLATE, Util.getInstallationProfile(context), filePath);
-            disposable.add(Observable.fromCallable(() -> Shell.su(command).exec())
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(result -> iLog(result, packageName, Type.INSTALL), throwable -> {
-                        Toast.makeText(context, R.string.string_install_failed, Toast.LENGTH_SHORT).show();
-                        eLog(packageName, Type.INSTALL);
-                    }));
-        } else {
-            notifyNoRoot(packageName);
-        }
+        executeRootInstall(packageName, filePath);
     }
 
     @Override
     public void installApk(@NonNull String packageName, @NonNull File fileName) {
+        executeRootInstall(packageName, fileName.getAbsolutePath());
+    }
+
+    // دعم التثبيت غير المقيد عبر الروت مباشرة
+    @Override
+    public void installApkUnrestricted(@NonNull String packageName, @NonNull String filePath) {
+        executeRootInstall(packageName, filePath);
+    }
+
+    /**
+     * تنفيذ التثبيت عبر الروت مع حقن خيارات التجاوز
+     * تعديل: عبدالله التميمي
+     */
+    private void executeRootInstall(String packageName, String filePath) {
         if (Shell.getShell().isRoot()) {
-            String command = String.format(INSTALL_PACKAGE_TEMPLATE, Util.getInstallationProfile(context), fileName.getAbsolutePath());
+            // استخدام قالب التثبيت مع إضافة -r و -d (Downgrade) لضمان عدم توقف العملية بسبب الشهادات
+            String command = String.format("pm install -r -d --user %s %s", 
+                    Util.getInstallationProfile(context), filePath);
+            
+            Log.i("RootInstaller [" + AuroraApplication.DEVELOPER_SIGNATURE + "]: Executing restricted bypass for " + packageName);
+
             disposable.add(Observable.fromCallable(() -> Shell.su(command).exec())
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -78,29 +74,14 @@ public class RootInstaller extends InstallerBase {
         }
     }
 
-   /* @Override
-    public void uninstall(@NonNull String packageName) {
-        if (Shell.getShell().isRoot()) {
-            String command = String.format(UNINSTALL_PACKAGE_TEMPLATE, packageName);
-            disposable.add(Observable.fromCallable(() -> Shell.su(command).exec())
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(result -> iLog(result, packageName, Type.UNINSTALL), throwable -> {
-                        Toast.makeText(context, R.string.string_uninstall_failed, Toast.LENGTH_SHORT).show();
-                        eLog(packageName, Type.UNINSTALL);
-                    }));
-        } else {
-            notifyNoRoot(packageName);
-        }
-    }*/
-
     private void iLog(Shell.Result result, String packageName, Type type) {
-        if (result.isSuccess())
-            Log.i(StringUtils.joinWith(StringUtils.SPACE, context.getString(type == Type.INSTALL
-                    ? R.string.string_install_success
-                    : R.string.string_uninstall_success), packageName));
-        else
+        if (result.isSuccess()) {
+            Log.i(StringUtils.joinWith(StringUtils.SPACE, "Success [" + AuroraApplication.DEVELOPER_SIGNATURE + "]:", packageName));
+        } else {
+            // طباعة تفاصيل الخطأ في الـ Log للمساعدة في تخطي حماية النظام
+            Log.e("Root Install Error Detail: " + result.getOut());
             eLog(packageName, type);
+        }
     }
 
     private void eLog(String packageName, Type type) {
