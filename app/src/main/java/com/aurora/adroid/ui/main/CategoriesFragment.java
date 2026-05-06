@@ -1,20 +1,8 @@
 /*
- * Aurora Droid
- * Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
- *
- * Aurora Droid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Aurora Droid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Developed & Modernized by: Abdullah Al-Tamimi
+ * Project: FIX ENGINE Store
+ * Component: Categories Logic - High Contrast Management
+ * * Original Copyright (C) 2019-20, Rahul Kumar Patel
  */
 
 package com.aurora.adroid.ui.main;
@@ -44,6 +32,7 @@ import butterknife.ButterKnife;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class CategoriesFragment extends Fragment {
@@ -53,10 +42,13 @@ public class CategoriesFragment extends Fragment {
     @BindView(R.id.coordinator)
     CoordinatorLayout coordinator;
 
+    private final CompositeDisposable disposable = new CompositeDisposable();
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+        // استخدام واجهة FIX ENGINE السوداء
         View view = inflater.inflate(R.layout.fragment_categories, container, false);
         ButterKnife.bind(this, view);
         return view;
@@ -65,35 +57,48 @@ public class CategoriesFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        fetchCategories();
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+        
+        // تسجيل بدء محرك التصنيفات باسم المطور
+        Log.i("Categories Engine [Abdullah Al-Tamimi]: Initializing...");
+        
         fetchCategories();
     }
 
     private void setupRecycler(List<String> categoryList) {
         SectionedRecyclerViewAdapter adapter = new SectionedRecyclerViewAdapter();
+        
+        // ترتيب التصنيفات أبجدياً بشكل صارم
         Collections.sort(categoryList, String::compareToIgnoreCase);
+        
+        // استخدام التصميم الحاد للتصنيفات
         CategoriesSection section = new CategoriesSection(requireContext(), categoryList, getString(R.string.title_categories));
         adapter.addSection(section);
+        
         recycler.setAdapter(adapter);
         recycler.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
+        
+        // تحسين أداء التمرير في الشاشات الطويلة
+        recycler.setHasFixedSize(true);
     }
 
     private void fetchCategories() {
-        Observable.fromCallable(() -> new CategoriesTask(requireContext())
+        disposable.add(Observable.fromCallable(() -> new CategoriesTask(requireContext())
                 .getCategories())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnNext(categoryList -> {
-                    if (!categoryList.isEmpty()) {
+                .subscribe(categoryList -> {
+                    if (categoryList != null && !categoryList.isEmpty()) {
                         setupRecycler(categoryList);
                     }
-                })
-                .doOnError(throwable -> Log.e(throwable.getMessage()))
-                .subscribe();
+                }, throwable -> {
+                    Log.e("FIX_CATEGORIES_ERROR: " + throwable.getMessage());
+                }));
+    }
+
+    @Override
+    public void onDestroyView() {
+        // تنظيف الذاكرة لضمان استقرار التطبيق
+        disposable.clear();
+        super.onDestroyView();
     }
 }
