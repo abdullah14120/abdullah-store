@@ -1,62 +1,47 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-  ~ Aurora Droid
-  ~ Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
-  ~
-  ~ Aurora Droid is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as published by
-  ~ the Free Software Foundation, either version 3 of the License, or
-  ~ (at your option) any later version.
-  ~
-  ~ Aurora Droid is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License
-  ~ along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
-  ~
-  -->
-
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginStart="@dimen/margin_xsmall"
-    android:layout_marginEnd="@dimen/margin_xsmall">
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:padding="4dp">
 
-    <androidx.appcompat.widget.AppCompatImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/img"
-        android:layout_width="@dimen/icon_size_large"
-        android:layout_height="@dimen/icon_size_large"
-        android:padding="@dimen/margin_xsmall" />
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:background="#161616"
+        android:padding="12dp"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.App.MediumComponent"
+        tools:srcCompat="@tools:sample/avatars" />
 
-    <androidx.appcompat.widget.AppCompatTextView
+    <TextView
         android:id="@+id/line1"
-        android:layout_width="match_parent"
+        android:layout_width="85dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/img"
-        android:layout_alignStart="@id/img"
-        android:layout_alignEnd="@id/img"
-        android:layout_marginTop="@dimen/margin_xsmall"
+        android:layout_marginTop="8dp"
         android:ellipsize="end"
-        android:maxWidth="@dimen/icon_size_large"
+        android:gravity="center"
         android:maxLines="1"
-        android:textAlignment="center"
-        android:textAppearance="@style/TextAppearance.Aurora.Line2"
-        android:textColor="?android:textColorPrimary"
-        tools:text="Aurora Store" />
+        android:textColor="#FFFFFF"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        tools:text="App Name" />
 
-    <androidx.appcompat.widget.AppCompatTextView
+    <TextView
         android:id="@+id/line2"
-        style="@style/AuroraTextStyle.Line3"
-        android:layout_width="match_parent"
+        android:layout_width="85dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/line1"
-        android:layout_alignStart="@id/img"
-        android:layout_alignEnd="@id/img"
+        android:layout_marginTop="2dp"
         android:ellipsize="end"
-        android:maxWidth="@dimen/icon_size_large"
+        android:gravity="center"
         android:maxLines="1"
-        android:textAlignment="center"
+        android:textColor="#00E676"
+        android:textSize="10sp"
+        android:textStyle="bold"
         tools:text="6 MB" />
-</RelativeLayout>
+</LinearLayout>
