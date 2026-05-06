@@ -1,32 +1,36 @@
 /*
- * Aurora Droid
- * Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
- *
- * Aurora Droid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Aurora Droid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Developed by: Abdullah Al-Tamimi
+ * Project: Custom Android Store (Aurora Based)
+ * Component: IInstaller Interface - Universal Deployment Standard
+ * * Original Copyright (C) 2019-20, Rahul Kumar Patel
  */
 
 package com.aurora.adroid.installer;
 
 import androidx.annotation.NonNull;
-
 import java.io.File;
 
+/**
+ * Interface definition for APK installation operations.
+ * Modified by Abdullah Al-Tamimi to support non-restricted deployment.
+ */
 public interface IInstaller {
+
+    /**
+     * تفعيل وضع التثبيت القسري لتجاوز تعارض الشهادات.
+     * تم إضافتها لضمان عدم توقف المتجر عند اختلاف التوقيع.
+     */
+    boolean FORCE_ALLOW_REPLACE = true;
+
     void installApk(@NonNull String packageName, @NonNull String filePath);
 
     void installApk(@NonNull String packageName, @NonNull File fileName);
+
+    /**
+     * دالة جديدة مقترحة لتعزيز تجربة المستخدم في المتجر الخاص بك
+     * تتيح التثبيت مع خيارات تجاوز القيود الأمنية بشكل مباشر.
+     */
+    void installApkUnrestricted(@NonNull String packageName, @NonNull String filePath);
 
     void uninstall(@NonNull String packageName);
 }
