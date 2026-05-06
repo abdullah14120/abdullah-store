@@ -28,7 +28,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.Unbinder; // إضافة مفقودة
+import butterknife.Unbinder;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -43,33 +43,28 @@ public class CategoriesFragment extends Fragment {
     CoordinatorLayout coordinator;
 
     private final CompositeDisposable disposable = new CompositeDisposable();
-    private Unbinder unbinder; // ضروري لمنع Memory Leak
+    private Unbinder unbinder;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        // استخدام واجهة FIX ENGINE السوداء
         View view = inflater.inflate(R.layout.fragment_categories, container, false);
-        unbinder = ButterKnife.bind(this, view); // ربط Unbinder
+        unbinder = ButterKnife.bind(this, view);
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
         Log.i("Categories Engine [Abdullah Al-Tamimi]: Initializing...");
-        
         fetchCategories();
     }
 
     private void setupRecycler(List<String> categoryList) {
-        // التحقق من أن Fragment لا يزال ملتصقاً بالنشاط (Context) لتجنب NullPointerException
         if (getContext() == null) return;
 
         SectionedRecyclerViewAdapter adapter = new SectionedRecyclerViewAdapter();
-        
         Collections.sort(categoryList, String::compareToIgnoreCase);
         
         CategoriesSection section = new CategoriesSection(requireContext(), categoryList, getString(R.string.title_categories));
@@ -77,7 +72,6 @@ public class CategoriesFragment extends Fragment {
         
         recycler.setAdapter(adapter);
         recycler.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
-        
         recycler.setHasFixedSize(true);
     }
 
@@ -87,26 +81,18 @@ public class CategoriesFragment extends Fragment {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(categoryList -> {
-                    // التحقق من أن الواجهة لا تزال موجودة قبل تحديث البيانات
                     if (categoryList != null && !categoryList.isEmpty() && recycler != null) {
                         setupRecycler(categoryList);
                     }
-                }, throwable -> {
-                    Log.e("FIX_CATEGORIES_ERROR: " + throwable.getMessage());
-                }));
+                }, throwable -> Log.e("FIX_CATEGORIES_ERROR: " + throwable.getMessage())));
     }
 
     @Override
     public void onDestroyView() {
-        // 1. تنظيف مهام الخلفية فوراً
         disposable.clear();
-        
-        // 2. فك ارتباط ButterKnife لضمان عدم حدوث Memory Leak
         if (unbinder != null) {
             unbinder.unbind();
         }
-        
         super.onDestroyView();
     }
-}
-}
+} // هذا هو القوس الأخير الذي يغلق الكلاس
