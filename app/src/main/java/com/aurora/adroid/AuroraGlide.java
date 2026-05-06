@@ -1,20 +1,8 @@
 /*
- * Aurora Droid
- * Copyright (C) 2019-20, Rahul Kumar Patel <whyorean@gmail.com>
- *
- * Aurora Droid is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Aurora Droid is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Aurora Droid.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Developed by: Abdullah Al-Tamimi
+ * Project: Custom Android Store (Aurora Based)
+ * Component: Glide Module - Image Processing & CDN Optimization
+ * * Original Copyright (C) 2019-20, Rahul Kumar Patel
  */
 
 package com.aurora.adroid;
@@ -49,29 +37,37 @@ import static com.bumptech.glide.load.DecodeFormat.PREFER_ARGB_8888;
 public class AuroraGlide extends AppGlideModule {
 
     private static RequestOptions requestOptions() {
+        // تم تعديل الـ Signature لضمان تحديث الأيقونات كل 12 ساعة بدلاً من 24
+        // لضمان ظهور أي تغييرات تجريها على Cloudflare بسرعة أكبر.
         return new RequestOptions()
-                .signature(new ObjectKey(System.currentTimeMillis() / (24 * 60 * 60 * 1000)))
-                .centerCrop()
+                .signature(new ObjectKey(System.currentTimeMillis() / (12 * 60 * 60 * 1000)))
+                .centerInside() // تم التغيير لـ centerInside للحفاظ على أبعاد أيقونات التطبيقات الأصلية
                 .encodeFormat(Bitmap.CompressFormat.PNG)
                 .encodeQuality(100)
-                .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                .diskCacheStrategy(DiskCacheStrategy.ALL) // تخزين الصورة الأصلية والمعدلة لسرعة العرض
                 .format(PREFER_ARGB_8888)
-                .timeout(10000)
+                .timeout(20000) // زيادة المهلة لـ 20 ثانية لضمان التحميل من سيرفرات بعيدة
                 .skipMemoryCache(false);
     }
 
     private static OkHttpClient getOkHttpClient(Context context) {
         final OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        
+        // طباعة توقيع المطور في سجلات الشبكة عند تهيئة محرك الصور
+        android.util.Log.i("GlideModule", "Initialized by: " + AuroraApplication.DEVELOPER_SIGNATURE);
+
         if (Util.isNetworkProxyEnabled(context))
             builder.proxy(Util.getNetworkProxy(context));
+        
         return builder.build();
     }
 
     @Override
     public void applyOptions(@NonNull Context context, @NonNull GlideBuilder builder) {
-        int memoryCacheSizeBytes = 1024 * 1024 * 50;
-        builder.setMemoryCache(new LruResourceCache(memoryCacheSizeBytes));
-        builder.setDiskCache(new InternalCacheDiskCacheFactory(context, memoryCacheSizeBytes));
+        // زيادة حجم الكاش لـ 100 ميجابايت لتجربة تصفح أسرع للتطبيقات الكثيرة
+        int cacheSizeBytes = 1024 * 1024 * 100; 
+        builder.setMemoryCache(new LruResourceCache(cacheSizeBytes / 2));
+        builder.setDiskCache(new InternalCacheDiskCacheFactory(context, cacheSizeBytes));
         builder.setDefaultRequestOptions(requestOptions());
         builder.setLogLevel(Log.ERROR);
     }
