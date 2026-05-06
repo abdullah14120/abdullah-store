@@ -1,45 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.preference.PreferenceScreen 
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <com.aurora.filepicker.view.FilePickerPreference
         android:key="PREFERENCE_DOWNLOAD_DIRECTORY"
         android:title="@string/pref_downloads_path_title"
         android:summary="اختر مجلد الحفظ الافتراضي لمحرك فيكس"
         android:defaultValue="/sdcard"
-        android:dependency="PREFERENCE_DOWNLOAD_INTERNAL"
-        app:fallbackDir="/sdcard"
-        app:iconSpaceReserved="false"
-        app:rootDir="/sdcard"
-        app:selectionMode="single"
-        app:selectionType="directory"
-        app:txtTitle="Select Directory" />
+        android:dependency="PREFERENCE_DOWNLOAD_INTERNAL" />
 
     <androidx.preference.SwitchPreferenceCompat
         android:key="PREFERENCE_DOWNLOAD_INTERNAL"
         android:title="@string/pref_downloader_internal"
         android:summary="@string/pref_downloader_internal_desc"
-        android:defaultValue="false"
-        android:disableDependentsState="true"
-        app:iconSpaceReserved="false"
-        app:singleLineTitle="false" />
+        android:defaultValue="false" />
 
     <androidx.preference.SwitchPreferenceCompat
         android:key="PREFERENCE_DOWNLOAD_WIFI"
         android:title="@string/pref_downloads_wifi_title"
-        android:defaultValue="false"
-        app:iconSpaceReserved="false"
-        app:singleLineTitle="false" />
+        android:defaultValue="false" />
 
     <androidx.preference.SeekBarPreference
         android:key="PREFERENCE_DOWNLOAD_ACTIVE"
         android:title="@string/pref_downloads_active_title"
         android:summary="@string/pref_downloads_active_summary"
         android:defaultValue="3"
-        android:max="12"
-        app:iconSpaceReserved="false"
-        app:singleLineTitle="false" />
+        android:max="12" />
 
     <androidx.preference.ListPreference
         android:key="PREFERENCE_DOWNLOAD_STRATEGY"
@@ -47,16 +33,12 @@
         android:summary="@string/pref_downloads_strategy_summary"
         android:entries="@array/pref_download_strategy"
         android:entryValues="@array/pref_download_strategy_values"
-        android:defaultValue="0"
-        app:iconSpaceReserved="false"
-        app:singleLineTitle="false" />
+        android:defaultValue="0" />
 
     <androidx.preference.SwitchPreferenceCompat
         android:key="PREFERENCE_DOWNLOAD_DEBUG"
         android:title="@string/pref_downloads_debug_title"
         android:summary="@string/pref_downloads_debug_summary"
-        android:defaultValue="false"
-        app:iconSpaceReserved="false"
-        app:singleLineTitle="false" />
+        android:defaultValue="false" />
 
 </androidx.preference.PreferenceScreen>
