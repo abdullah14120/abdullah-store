@@ -1,8 +1,7 @@
 /*
  * Developed & Modernized by: Abdullah Al-Tamimi
  * Project: FIX ENGINE Store
- * Component: Categories Logic - High Contrast Management
- * * Original Copyright (C) 2019-20, Rahul Kumar Patel
+ * Component: Categories Logic - High Contrast Management (Stable Build)
  */
 
 package com.aurora.adroid.ui.main;
@@ -29,6 +28,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder; // إضافة مفقودة
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -43,6 +43,7 @@ public class CategoriesFragment extends Fragment {
     CoordinatorLayout coordinator;
 
     private final CompositeDisposable disposable = new CompositeDisposable();
+    private Unbinder unbinder; // ضروري لمنع Memory Leak
 
     @Nullable
     @Override
@@ -50,7 +51,7 @@ public class CategoriesFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         // استخدام واجهة FIX ENGINE السوداء
         View view = inflater.inflate(R.layout.fragment_categories, container, false);
-        ButterKnife.bind(this, view);
+        unbinder = ButterKnife.bind(this, view); // ربط Unbinder
         return view;
     }
 
@@ -58,26 +59,25 @@ public class CategoriesFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         
-        // تسجيل بدء محرك التصنيفات باسم المطور
         Log.i("Categories Engine [Abdullah Al-Tamimi]: Initializing...");
         
         fetchCategories();
     }
 
     private void setupRecycler(List<String> categoryList) {
+        // التحقق من أن Fragment لا يزال ملتصقاً بالنشاط (Context) لتجنب NullPointerException
+        if (getContext() == null) return;
+
         SectionedRecyclerViewAdapter adapter = new SectionedRecyclerViewAdapter();
         
-        // ترتيب التصنيفات أبجدياً بشكل صارم
         Collections.sort(categoryList, String::compareToIgnoreCase);
         
-        // استخدام التصميم الحاد للتصنيفات
         CategoriesSection section = new CategoriesSection(requireContext(), categoryList, getString(R.string.title_categories));
         adapter.addSection(section);
         
         recycler.setAdapter(adapter);
         recycler.setLayoutManager(new LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false));
         
-        // تحسين أداء التمرير في الشاشات الطويلة
         recycler.setHasFixedSize(true);
     }
 
@@ -87,7 +87,8 @@ public class CategoriesFragment extends Fragment {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(categoryList -> {
-                    if (categoryList != null && !categoryList.isEmpty()) {
+                    // التحقق من أن الواجهة لا تزال موجودة قبل تحديث البيانات
+                    if (categoryList != null && !categoryList.isEmpty() && recycler != null) {
                         setupRecycler(categoryList);
                     }
                 }, throwable -> {
@@ -97,8 +98,15 @@ public class CategoriesFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        // تنظيف الذاكرة لضمان استقرار التطبيق
+        // 1. تنظيف مهام الخلفية فوراً
         disposable.clear();
+        
+        // 2. فك ارتباط ButterKnife لضمان عدم حدوث Memory Leak
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
+        
         super.onDestroyView();
     }
+}
 }
