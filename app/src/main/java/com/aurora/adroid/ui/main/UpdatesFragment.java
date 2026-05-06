@@ -1,13 +1,14 @@
 /*
  * Developed & Optimized by: Abdullah Al-Tamimi
  * Project: FIX ENGINE Store
- * Component: Advanced Update Manager
+ * Component: Advanced Update Manager (Stable Build)
  * * Original Copyright (C) 2019-20, Rahul Kumar Patel
  */
 
 package com.aurora.adroid.ui.main;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -46,9 +47,7 @@ import com.tonyodev.fetch2.AbstractFetchGroupListener;
 import com.tonyodev.fetch2.Download;
 import com.tonyodev.fetch2.Fetch;
 import com.tonyodev.fetch2.FetchGroup;
-import com.tonyodev.fetch2.FetchListener;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -58,6 +57,7 @@ import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder; // إضافة مفقودة
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -74,6 +74,7 @@ public class UpdatesFragment extends BaseFragment {
     private Fetch fetch;
     private final Set<UpdatesItem> selectedItems = new HashSet<>();
     private final CompositeDisposable disposable = new CompositeDisposable();
+    private Unbinder unbinder; // ضروري للـ Fragments
 
     private UpdatesViewModel model;
     private FastAdapter<UpdatesItem> fastAdapter;
@@ -85,30 +86,41 @@ public class UpdatesFragment extends BaseFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_updates, container, false);
-        ButterKnife.bind(this, view);
+        unbinder = ButterKnife.bind(this, view);
         return view;
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         
-        // بصمة المطور عند تشغيل مدير التحديثات
         Log.i("FIX Update Engine [Abdullah Al-Tamimi]: Initialized");
 
         fetch = DownloadManager.getFetchInstance(requireContext());
         setupRecycler();
 
+        // ضبط الألوان برمجياً لتجنب مشاكل AAPT2
+        swipeLayout.setColorSchemeColors(Color.parseColor("#00E676"));
+
         model = new ViewModelProvider(requireActivity()).get(UpdatesViewModel.class);
         model.getAppsLiveData().observe(getViewLifecycleOwner(), updatesItems -> {
-            dispatchAppsToAdapter(updatesItems);
+            if (updatesItems != null) {
+                dispatchAppsToAdapter(updatesItems);
+            }
             swipeLayout.setRefreshing(false);
         });
 
+        initRxBus();
+
+        swipeLayout.setOnRefreshListener(() -> model.fetchUpdatableApps());
+    }
+
+    private void initRxBus() {
         disposable.add(AuroraApplication.getRxBus().getBus()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(event -> {
+                    if (itemAdapter == null) return;
                     switch (event.getType()) {
                         case BLACKLIST:
                         case INSTALLED:
@@ -120,11 +132,6 @@ public class UpdatesFragment extends BaseFragment {
                             break;
                     }
                 }, throwable -> Log.e("FIX_BUS_ERROR: " + throwable.getMessage())));
-
-        swipeLayout.setOnRefreshListener(() -> model.fetchUpdatableApps());
-        
-        // تلوين الـ SwipeRefresh بالهوية الجديدة
-        swipeLayout.setColorSchemeColors(Util.getColorAttribute(requireContext(), R.attr.colorAccent));
     }
 
     private void removeItemByPackageName(String packageName) {
@@ -147,6 +154,7 @@ public class UpdatesFragment extends BaseFragment {
     }
 
     private void updatePageData() {
+        if (getContext() == null) return;
         updateText();
         updateButtons();
         updateButtonActions();
@@ -176,7 +184,7 @@ public class UpdatesFragment extends BaseFragment {
             intent.putExtra(Constants.INTENT_PACKAGE_NAME, app.getPackageName());
             intent.putExtra(Constants.STRING_REPO, app.getRepoName());
             startActivity(intent, ViewUtil.getEmptyActivityBundle((AppCompatActivity) requireActivity()));
-            return false;
+            return true;
         });
 
         fastAdapter.addExtension(selectExtension);
@@ -195,7 +203,6 @@ public class UpdatesFragment extends BaseFragment {
     }
 
     private void updateText() {
-        // نصوص حادة ومباشرة (دبلوماسية)
         if (selectExtension.getSelectedItems().size() > 0) {
             btnAction.setText("تحديث العناصر المختارة");
         } else {
@@ -224,8 +231,8 @@ public class UpdatesFragment extends BaseFragment {
                 btnAction.setEnabled(false);
             });
         } else {
-            boolean selectiveUpdate = selectExtension.getSelectedItems().size() > 0;
             btnAction.setOnClickListener(v -> {
+                boolean selectiveUpdate = selectExtension.getSelectedItems().size() > 0;
                 btnAction.setEnabled(false);
                 disposable.add(Observable.fromIterable(selectiveUpdate ? selectedItems : itemAdapter.getAdapterItems())
                         .map(UpdatesItem::getApp)
@@ -239,6 +246,7 @@ public class UpdatesFragment extends BaseFragment {
     }
 
     private void attachFetchCancelListener() {
+        if (fetch == null) return;
         boolean selectiveUpdate = selectExtension.getSelectedItems().size() > 0;
         disposable.add(Observable.fromIterable(selectiveUpdate ? selectedItems : itemAdapter.getAdapterItems())
                 .map(updatesItem -> updatesItem.getPackageName().hashCode())
@@ -250,9 +258,17 @@ public class UpdatesFragment extends BaseFragment {
                         }
                     });
                 }, throwable -> Log.e(throwable.getMessage()), () -> {
-                    AuroraApplication.setOngoingUpdateList(new ArrayList<>());
-                    Util.stopBulkUpdateService(requireContext());
+                     AuroraApplication.setOngoingUpdateList(new ArrayList<>());
+                     Util.stopBulkUpdateService(requireContext());
                 }));
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (unbinder != null) {
+            unbinder.unbind();
+        }
     }
 
     @Override
